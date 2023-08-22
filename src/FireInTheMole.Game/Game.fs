@@ -1,6 +1,8 @@
 ﻿namespace FireInTheMole.Game
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
+open System
+open Microsoft.Xna.Framework.Input
 
 
 type FireInTheMoleGame() as this = 
@@ -8,13 +10,11 @@ type FireInTheMoleGame() as this =
 
     let bg = Color.Black
     let graphics = new GraphicsDeviceManager(this)
+    let mutable rt = Unchecked.defaultof<RenderTarget2D>
+    let mutable scale = 1f
     let mutable sb = Unchecked.defaultof<SpriteBatch>
     let mutable pixel = Unchecked.defaultof<Texture2D>
     let mutable circle = Unchecked.defaultof<Texture2D>
-    let mutable player1 = Unchecked.defaultof<Player.Player>
-    let mutable player2 = Unchecked.defaultof<Player.Player>
-    let mutable player3 = Unchecked.defaultof<Player.Player>
-    let mutable player4 = Unchecked.defaultof<Player.Player>
     let mutable players = Unchecked.defaultof<Player.Player[]>
 
     do
@@ -22,6 +22,20 @@ type FireInTheMoleGame() as this =
         this.IsMouseVisible <- true
         graphics.GraphicsProfile <- GraphicsProfile.HiDef
         graphics.IsFullScreen <- false
+
+    let initializeGraphics() =
+        let renderWidth = 640 * int scale
+        let renderHeight = 360 * int scale
+        graphics.PreferredBackBufferWidth <- renderWidth
+        graphics.PreferredBackBufferHeight <- renderHeight
+        graphics.ApplyChanges()
+        rt <- new RenderTarget2D(
+            this.GraphicsDevice,
+            640,
+            360,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.Depth24Stencil8);
 
     let loadTextures() = 
         pixel <- new Texture2D(this.GraphicsDevice, 1, 1, false, SurfaceFormat.Color)
@@ -37,15 +51,16 @@ type FireInTheMoleGame() as this =
         |> circle.SetData
 
     let loadPlayers() =
-        player1 <- Player.create circle PlayerIndex.One true (Vector2(100f, 100f))
-        player2 <- Player.create circle PlayerIndex.Two false (Vector2(200f, 200f))
-        player3 <- Player.create circle PlayerIndex.Three false (Vector2(300f, 300f))
-        player4 <- Player.create circle PlayerIndex.Four false (Vector2(400f, 400f))
-        players <- [| player1; player2; player3; player4 |]
+        let p1 = Player.create circle PlayerIndex.One true (Vector2(100f, 100f))
+        let p2 = Player.create circle PlayerIndex.Two false (Vector2(200f, 200f))
+        let p3 = Player.create circle PlayerIndex.Three false (Vector2(300f, 300f))
+        let p4 = Player.create circle PlayerIndex.Four false (Vector2(400f, 400f))
+        players <- [| p1; p2; p3; p4 |]
 
     member this.Graphics = graphics
 
     override this.Initialize() =
+        initializeGraphics()
         base.Initialize()
     
     override this.LoadContent() =
@@ -59,11 +74,33 @@ type FireInTheMoleGame() as this =
             |> Seq.map (fun p -> p, Player.getInput p)
             |> Seq.map (Player.update gametime)
             |> Array.ofSeq
+
+        if Keyboard.GetState().IsKeyDown(Keys.Escape) then this.Exit()
+        if Keyboard.GetState().IsKeyDown(Keys.PageUp) then scale <- scale + 1f; initializeGraphics()
+        if Keyboard.GetState().IsKeyDown(Keys.PageDown) then scale <- scale - 1f; initializeGraphics()
         base.Update(gametime)
 
     override this.Draw(gametime) =
+        
+        // First, we are drawing everything to the render target 
+        this.GraphicsDevice.SetRenderTarget rt
         this.GraphicsDevice.Clear bg
         sb.Begin()
         Seq.iter (Player.draw sb) players
         sb.End()
+        this.GraphicsDevice.SetRenderTarget null
+
+        // Then we draw the render target to the screen
+        let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
+        let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
+        let rect = Nullable<Rectangle>()
+        sb.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullCounterClockwise)
+        sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
+        sb.End()
+
         base.Draw(gametime)

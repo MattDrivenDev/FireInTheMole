@@ -1,7 +1,7 @@
 ﻿namespace FireInTheMole.Game
+open System
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
-open System
 open Microsoft.Xna.Framework.Input
 
 
@@ -15,6 +15,7 @@ type FireInTheMoleGame() as this =
     let mutable sb = Unchecked.defaultof<SpriteBatch>
     let mutable pixel = Unchecked.defaultof<Texture2D>
     let mutable circle = Unchecked.defaultof<Texture2D>
+    let mutable yellow = Unchecked.defaultof<Texture2D>
     let mutable players = Unchecked.defaultof<Player.Player[]>
 
     do
@@ -24,6 +25,7 @@ type FireInTheMoleGame() as this =
         graphics.IsFullScreen <- false
 
     let initializeGraphics() =
+        scale <- MathHelper.Clamp(scale, 1f, 4f)
         let renderWidth = 640 * int scale
         let renderHeight = 360 * int scale
         graphics.PreferredBackBufferWidth <- renderWidth
@@ -38,9 +40,12 @@ type FireInTheMoleGame() as this =
             DepthFormat.Depth24Stencil8);
 
     let loadTextures() = 
+        // A single pixel is useful for drawing lots of primitives
         pixel <- new Texture2D(this.GraphicsDevice, 1, 1, false, SurfaceFormat.Color)
         pixel.SetData([| Color.White |])
 
+        // A circle could be drawn with pixels, but that nukes the framerate so
+        // we'll create the texture once and reuse it
         circle <- new Texture2D(this.GraphicsDevice, Player.size, Player.size, false, SurfaceFormat.Color)
         Array.init Player.size (fun y -> Array.init Player.size (fun x -> 
             let dx = float32 (x - Player.size / 2)
@@ -50,11 +55,18 @@ type FireInTheMoleGame() as this =
         |> Array.concat
         |> circle.SetData
 
+        // Yellow mole spritesheet
+        yellow <- this.Content.Load<Texture2D>("mole/yellow")
+
     let loadPlayers() =
-        let p1 = Player.create circle PlayerIndex.One true (Vector2(100f, 100f))
-        let p2 = Player.create circle PlayerIndex.Two false (Vector2(200f, 200f))
-        let p3 = Player.create circle PlayerIndex.Three false (Vector2(300f, 300f))
-        let p4 = Player.create circle PlayerIndex.Four false (Vector2(400f, 400f))
+        let animation =
+            let size = Point(256, 512)
+            let offset = Point(0, 0)
+            Animation.create yellow 2 4 size offset 
+        let p1 = Player.create animation PlayerIndex.One true (Vector2(100f, 100f))
+        let p2 = Player.create animation PlayerIndex.Two false (Vector2(200f, 200f))
+        let p3 = Player.create animation PlayerIndex.Three false (Vector2(300f, 300f))
+        let p4 = Player.create animation PlayerIndex.Four false (Vector2(400f, 400f))
         players <- [| p1; p2; p3; p4 |]
 
     member this.Graphics = graphics
@@ -75,9 +87,13 @@ type FireInTheMoleGame() as this =
             |> Seq.map (Player.update gametime)
             |> Array.ofSeq
 
-        if Keyboard.GetState().IsKeyDown(Keys.Escape) then this.Exit()
-        if Keyboard.GetState().IsKeyDown(Keys.PageUp) then scale <- scale + 1f; initializeGraphics()
-        if Keyboard.GetState().IsKeyDown(Keys.PageDown) then scale <- scale - 1f; initializeGraphics()
+        match Keyboard.GetState() with
+        | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
+        | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
+        | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
+        | KeyDown Keys.Escape -> this.Exit()
+        | _ -> ()
+        
         base.Update(gametime)
 
     override this.Draw(gametime) =

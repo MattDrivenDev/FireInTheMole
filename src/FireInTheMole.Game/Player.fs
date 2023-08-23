@@ -1,7 +1,5 @@
 ﻿namespace FireInTheMole.Game
 open Microsoft.Xna.Framework
-open Microsoft.Xna.Framework.Graphics
-open System
 open Microsoft.Xna.Framework.Input
 
 
@@ -10,19 +8,22 @@ module Player =
     [<Literal>] 
     let size = 64
 
-    [<Measure>] type degrees
-    [<Measure>] type radians
+    type PlayerState = 
+        | Idle
+        | Moving
+        | Dead
 
     type Player = {
         position: Vector2
         angle: float32<degrees>
         speed: float32
-        texture: Texture2D
         size: Point
         offset: Point
         index: PlayerIndex
         active: bool
         color : Color
+        animation: Animation.Animation
+        state: PlayerState
     }
 
     type Input = {
@@ -38,30 +39,32 @@ module Player =
         | PlayerIndex.Four -> Color.Yellow
         | _ -> failwith "Invalid player index"
 
-    let create tx idx active p = {
+    let create animation idx active p = {
         position = p
         angle = 0f<degrees>
         speed = 166f
-        texture = tx
         size = Point(size, size)
         offset = Point(0, 0)
         index = idx
         active = active
         color = color idx
+        animation = animation
+        state = Idle
     }
 
-    let draw sb player = 
-        let draw' (sb : SpriteBatch) player =
-            let sourceRect = Rectangle(player.offset, player.size)
-            sb.Draw(player.texture, player.position, Nullable.op_Implicit sourceRect, player.color)
-        if player.active then draw' sb player
+    let chooseAnimation = function
+        | Idle -> Animation.IdleAnimation
+        | Moving -> Animation.MoveAnimation
+        | Dead -> Animation.DeadAnimation
+
+    let draw sb player =
+        if player.active then
+            Rectangle(player.position.ToPoint(), player.size)
+            |> Animation.draw sb player.animation Color.White 
 
     /// We're only getting input for player one at the moment
     let getInput player =
         let ks = Keyboard.GetState()
-       
-        let (|KeyDown|_|) key (ks : KeyboardState) = 
-            if ks.IsKeyDown(key) then Some() else None
 
         let movement = 
             match ks with
@@ -101,6 +104,8 @@ module Player =
                 angle = newAngle
             }
 
+        let animation = Animation.update gametime player.animation
+
         match input with
-        | Some input -> update' input
-        | None -> player
+        | Some input -> { update' input with animation = animation }
+        | None -> { player with animation = animation }

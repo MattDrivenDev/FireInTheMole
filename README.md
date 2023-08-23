@@ -1,4 +1,13 @@
 # Fire In The Mole!
+A game about moles mining with dynamite and blowing each other up (a Bomberstein3D).
+
+## TODO
+ - [ ] Create the Map of animations, where the idle/movement/dead states are keys.
+ - [ ] Change the animation based on the movement and direction of the player.
+ - [ ] Load a Tiled map.
+ - [ ] When rendering top-down, use an orthographic camera that follows the player.
+ - [ ] Work on the AABB collision detection.
+ - [x] Render mole instead of circle for player.
 
 ## But why F#?
 So... I wrote the prototype in C#. Then, after some playtesting and realising that the game might have some legs, I knew I had to do some fairly heavy refactoring. But, the harder I refactored, the more it became a re-write. And then the harder I re-wrote, the more of a hot spaghetti mess it became again.

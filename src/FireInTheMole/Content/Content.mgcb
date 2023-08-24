@@ -10,10 +10,26 @@
 
 #-------------------------------- References --------------------------------#
 
+/reference:..\..\..\lib\MonoGame.Extended\MonoGame.Extended.Content.Pipeline\bin\net6.0\MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 
-#begin mole/yellow.png
+#begin Maps/Grass/Pillars.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Maps/Grass/Pillars.tmx
+
+#begin Maps/Grass/Rooms.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Maps/Grass/Rooms.tmx
+
+#begin Maps/Snow/NoWayIn.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Maps/Snow/NoWayIn.tmx
+
+#begin Maps/Textures/grass.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -23,5 +39,29 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:mole/yellow.png
+/build:Maps/Textures/grass.png
+
+#begin Maps/Textures/snow.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Maps/Textures/snow.png
+
+#begin Mole/yellow.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Mole/yellow.png
 

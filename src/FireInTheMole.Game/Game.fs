@@ -96,7 +96,7 @@ type FireInTheMoleGame() as this =
         this.GraphicsDevice.SetRenderTarget rt
         this.GraphicsDevice.Clear bg
         sb.Begin()
-        Seq.iter (Player.draw sb) players
+        Seq.iter (Player.draw sb pixel) players
         sb.End()
         this.GraphicsDevice.SetRenderTarget null
 

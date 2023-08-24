@@ -1,7 +1,7 @@
 ﻿namespace FireInTheMole.Game
+open System.Diagnostics
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
-open System
 
 
 module Animation = 
@@ -17,9 +17,9 @@ module Animation =
         | DownRight     // 4:30
 
     type AnimationKey = 
-        | IdleAnimation
-        | MoveAnimation
-        | DeadAnimation
+        | IdleAnimation of AnimationAngle
+        | MoveAnimation of AnimationAngle
+        | DeadAnimation of AnimationAngle
 
     type Animation = {
         texture: Texture2D
@@ -30,19 +30,6 @@ module Animation =
         frameLength: float32
         size: Point
     }
-
-    // Active Pattern to convert a float32<degrees> to an AnimationAngle
-    let (|Angle|_|) angle = 
-        let angle = angle % 360f<degrees>
-        if angle >= 337.5f<degrees> || angle < 22.5f<degrees> then Some(Up)
-        elif angle >= 22.5f<degrees> && angle < 67.5f<degrees> then Some(UpRight)
-        elif angle >= 67.5f<degrees> && angle < 112.5f<degrees> then Some(Right)
-        elif angle >= 112.5f<degrees> && angle < 157.5f<degrees> then Some(DownRight)
-        elif angle >= 157.5f<degrees> && angle < 202.5f<degrees> then Some(Down)
-        elif angle >= 202.5f<degrees> && angle < 247.5f<degrees> then Some(DownLeft)
-        elif angle >= 247.5f<degrees> && angle < 292.5f<degrees> then Some(Left)
-        elif angle >= 292.5f<degrees> && angle < 337.5f<degrees> then Some(UpLeft)
-        else None
 
     let horizontalFrames count (size : Point) (offset : Point) = 
         let cell i = 
@@ -61,21 +48,33 @@ module Animation =
     }
 
     let currentFrame animation = 
-        animation.frames.[animation.currentFrame]
+        let sourceRect = animation.frames.[animation.currentFrame]        
+        Debug.WriteLine (sprintf "Frame: %i = %A" animation.currentFrame sourceRect)
+        sourceRect
 
     let reset animation = 
         { animation with 
             currentFrame = 0; frameTimer = 0f }
 
     let update (gametime: GameTime) animation = 
-        let frameTimer, frame = 
-            match animation.frameTimer + float32 gametime.ElapsedGameTime.TotalSeconds with
-            | t when t >= animation.frameLength -> 0f, (animation.currentFrame + 1) % animation.frames.Length
-            | t -> t, animation.currentFrame
-        { animation with
-            frameTimer = frameTimer
-            currentFrame = frame }
+        let dt = float32 gametime.ElapsedGameTime.TotalSeconds
+        let frameTimer, frame =             
+            match animation.frameTimer + dt with
+            | t when t >= animation.frameLength -> 
+                0f, (animation.currentFrame + 1) //% animation.frames.Length
+            | t -> 
+                t + dt, animation.currentFrame
+        let newAnimation = 
+            { animation with
+                frameTimer = frameTimer
+                currentFrame = frame }
+        Debug.WriteLine (sprintf "%A" newAnimation)
+        newAnimation
 
-    let draw (sb : SpriteBatch) animation color (destination : Rectangle) =
+    let draw (sb : SpriteBatch) animation color rev (destination : Rectangle) =
         let source = currentFrame animation
-        sb.Draw(animation.texture, destination, source, color)
+        let origin = source.Location.ToVector2()
+        let effects = 
+            if rev then SpriteEffects.FlipHorizontally
+            else SpriteEffects.None
+        sb.Draw(animation.texture, destination, source, color, 0f, origin, effects, 0f)

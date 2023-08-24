@@ -7,6 +7,10 @@ module Player =
 
     [<Literal>] 
     let size = 64
+    [<Literal>]
+    let speed = 166f
+    [<Literal>]
+    let turnSpeed = 10f 
 
     type PlayerState = 
         | Idle
@@ -22,7 +26,8 @@ module Player =
         index: PlayerIndex
         active: bool
         color : Color
-        animation: Animation.Animation
+        animations: Map<Animation.AnimationKey, Animation.Animation>
+        currentAnimation: Animation.Animation
         state: PlayerState
     }
 
@@ -39,28 +44,90 @@ module Player =
         | PlayerIndex.Four -> Color.Yellow
         | _ -> failwith "Invalid player index"
 
-    let create animation idx active p = {
-        position = p
-        angle = 0f<degrees>
-        speed = 166f
-        size = Point(size, size)
-        offset = Point(0, 0)
-        index = idx
-        active = active
-        color = color idx
-        animation = animation
-        state = Idle
-    }
+    let moveRightAnimation tx = 
+        let s = Point(256, 512)
+        let o = Point(0, 0)
+        Animation.create tx 2 4 s o
 
-    let chooseAnimation = function
-        | Idle -> Animation.IdleAnimation
-        | Moving -> Animation.MoveAnimation
-        | Dead -> Animation.DeadAnimation
+    let moveUpRightAnimation tx = 
+        let s = Point(256, 512)
+        let o = Point(0, 512)
+        Animation.create tx 2 4 s o
+
+    let moveDownRightAnimation tx = 
+        let s = Point(256, 512)
+        let o = Point(0, 1024)
+        Animation.create tx 2 4 s o
+
+    let moveDownAnimation tx =
+        let s = Point(256, 512)
+        let o = Point(0, 1536)
+        Animation.create tx 2 4 s o
+
+    let moveUpAnimation tx = 
+        let s = Point(256, 512)
+        let o = Point(0, 2048)
+        Animation.create tx 2 4 s o
+
+    let loadAnimations tx = 
+        let walkRight = moveRightAnimation tx
+        let walkUpRight = moveUpRightAnimation tx
+        let walkDownRight = moveDownRightAnimation tx
+        let walkDown = moveDownAnimation tx
+        let walkUp = moveUpAnimation tx
+        [|
+            (Animation.MoveAnimation Animation.AnimationAngle.Right, walkRight)
+            (Animation.MoveAnimation Animation.AnimationAngle.DownRight, walkDownRight)
+            (Animation.MoveAnimation Animation.AnimationAngle.Down, walkDown)
+            (Animation.MoveAnimation Animation.AnimationAngle.DownLeft, walkDownRight)
+            (Animation.MoveAnimation Animation.AnimationAngle.Left, walkRight)
+            (Animation.MoveAnimation Animation.AnimationAngle.UpLeft, walkUpRight)
+            (Animation.MoveAnimation Animation.AnimationAngle.Up, walkUp)
+            (Animation.MoveAnimation Animation.AnimationAngle.UpRight, walkUpRight)
+        |] |> Map.ofArray
+
+    let animationKey angle =         
+        if angle >= 337.5f<degrees> || angle < 22.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.Right
+        elif angle >= 22.5f<degrees> && angle < 67.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.UpRight
+        elif angle >= 67.5f<degrees> && angle < 112.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.Up
+        elif angle >= 112.5f<degrees> && angle < 157.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.UpLeft
+        elif angle >= 157.5f<degrees> && angle < 202.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.Left
+        elif angle >= 202.5f<degrees> && angle < 247.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.DownLeft
+        elif angle >= 247.5f<degrees> && angle < 292.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.Down
+        elif angle >= 292.5f<degrees> && angle < 337.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.DownRight
+        else failwith "Invalid angle"
+
+    let create tx idx active p = 
+        let animations = loadAnimations tx
+        {
+            position = p
+            angle = 0f<degrees>
+            speed = speed
+            size = Point(size, size)
+            offset = Point(0, 0)
+            index = idx
+            active = active
+            color = color idx
+            animations = animations
+            currentAnimation = animations.[Animation.MoveAnimation Animation.AnimationAngle.Right]
+            state = Idle
+        }
+
+    let chooseAnimation angle = function
+        | Idle -> Animation.IdleAnimation angle
+        | Moving -> Animation.MoveAnimation angle
+        | Dead -> Animation.DeadAnimation angle
 
     let draw sb player =
-        if player.active then
+        if player.active then  
+            let rev = 
+                match animationKey player.angle with
+                | Animation.MoveAnimation Animation.AnimationAngle.Left -> true
+                | Animation.MoveAnimation Animation.AnimationAngle.UpLeft -> true
+                | Animation.MoveAnimation Animation.AnimationAngle.DownLeft -> true
+                | _ -> false
             Rectangle(player.position.ToPoint(), player.size)
-            |> Animation.draw sb player.animation Color.White 
+            |> Animation.draw sb player.currentAnimation Color.White rev
 
     /// We're only getting input for player one at the moment
     let getInput player =
@@ -79,8 +146,8 @@ module Player =
             | _ -> Vector2.Zero
 
         let rotate =
-            if ks.IsKeyDown(Keys.Left) then -1f<degrees>
-            elif ks.IsKeyDown(Keys.Right) then 1f<degrees>
+            if ks.IsKeyDown(Keys.Left) then 45f<degrees>
+            elif ks.IsKeyDown(Keys.Right) then -45f<degrees>
             else 0f<degrees>
 
         let act = ks.IsKeyDown(Keys.LeftControl)
@@ -95,17 +162,21 @@ module Player =
 
     let update (gametime : GameTime) (player, input) =
         let deltatime = gametime.ElapsedGameTime.TotalSeconds
-
-        let update' input = 
+        let apply input = 
             let newPosition = player.position + input.movement * player.speed * float32(deltatime)
-            let newAngle = player.angle + input.rotate * float32(deltatime)
+            let newAngle = player.angle + input.rotate * turnSpeed * float32(deltatime) |> normAngle
+            let animationKey = animationKey newAngle
+            let newAnimation = player.animations.[animationKey]
+            let animation = 
+                if newAnimation = player.currentAnimation 
+                    then Animation.update gametime player.currentAnimation 
+                    else newAnimation
             { player with 
                 position = newPosition
                 angle = newAngle
-            }
-
-        let animation = Animation.update gametime player.animation
-
-        match input with
-        | Some input -> { update' input with animation = animation }
-        | None -> { player with animation = animation }
+                currentAnimation = animation }
+        let newPlayer = 
+            match input with
+            | Some input -> apply input
+            | None -> { player with currentAnimation = Animation.update gametime player.currentAnimation }
+        newPlayer

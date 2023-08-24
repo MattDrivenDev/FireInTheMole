@@ -59,14 +59,10 @@ type FireInTheMoleGame() as this =
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
     let loadPlayers() =
-        let animation =
-            let size = Point(256, 512)
-            let offset = Point(0, 0)
-            Animation.create yellow 2 4 size offset 
-        let p1 = Player.create animation PlayerIndex.One true (Vector2(100f, 100f))
-        let p2 = Player.create animation PlayerIndex.Two false (Vector2(200f, 200f))
-        let p3 = Player.create animation PlayerIndex.Three false (Vector2(300f, 300f))
-        let p4 = Player.create animation PlayerIndex.Four false (Vector2(400f, 400f))
+        let p1 = Player.create yellow PlayerIndex.One true (Vector2(100f, 100f))
+        let p2 = Player.create yellow PlayerIndex.Two false (Vector2(200f, 200f))
+        let p3 = Player.create yellow PlayerIndex.Three false (Vector2(300f, 300f))
+        let p4 = Player.create yellow PlayerIndex.Four false (Vector2(400f, 400f))
         players <- [| p1; p2; p3; p4 |]
 
     member this.Graphics = graphics

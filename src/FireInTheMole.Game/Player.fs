@@ -44,47 +44,43 @@ module Player =
         | PlayerIndex.Four -> Color.Yellow
         | _ -> failwith "Invalid player index"
 
-    let moveRightAnimation tx = 
+    let moveRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 0)
-        Animation.create tx 2 4 s o
+        Animation.create k tx 2 4 s o
 
-    let moveUpRightAnimation tx = 
+    let moveUpRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 512)
-        Animation.create tx 2 4 s o
+        Animation.create k tx 2 4 s o
 
-    let moveDownRightAnimation tx = 
+    let moveDownRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 1024)
-        Animation.create tx 2 4 s o
+        Animation.create k tx 2 4 s o
 
-    let moveDownAnimation tx =
+    let moveDownAnimation k tx =
         let s = Point(256, 512)
         let o = Point(0, 1536)
-        Animation.create tx 2 4 s o
+        Animation.create k tx 2 4 s o
 
-    let moveUpAnimation tx = 
+    let moveUpAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 2048)
-        Animation.create tx 2 4 s o
+        Animation.create k tx 2 4 s o
 
     let loadAnimations tx = 
-        let walkRight = moveRightAnimation tx
-        let walkUpRight = moveUpRightAnimation tx
-        let walkDownRight = moveDownRightAnimation tx
-        let walkDown = moveDownAnimation tx
-        let walkUp = moveUpAnimation tx
-        [|
-            (Animation.MoveAnimation Animation.AnimationAngle.Right, walkRight)
-            (Animation.MoveAnimation Animation.AnimationAngle.DownRight, walkDownRight)
-            (Animation.MoveAnimation Animation.AnimationAngle.Down, walkDown)
-            (Animation.MoveAnimation Animation.AnimationAngle.DownLeft, walkDownRight)
-            (Animation.MoveAnimation Animation.AnimationAngle.Left, walkRight)
-            (Animation.MoveAnimation Animation.AnimationAngle.UpLeft, walkUpRight)
-            (Animation.MoveAnimation Animation.AnimationAngle.Up, walkUp)
-            (Animation.MoveAnimation Animation.AnimationAngle.UpRight, walkUpRight)
-        |] |> Map.ofArray
+        let walkRight = moveRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.Right) tx
+        let walkUpRight = moveUpRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.UpRight) tx
+        let walkUp = moveUpAnimation (Animation.MoveAnimation Animation.AnimationAngle.Up) tx
+        let walkUpLeft = moveUpRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.UpLeft) tx        
+        let walkLeft = moveRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.Left) tx  
+        let walkDownLeft = moveDownRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.DownLeft) tx
+        let walkDown = moveDownAnimation (Animation.MoveAnimation Animation.AnimationAngle.Down) tx
+        let walkDownRight = moveDownRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.DownRight) tx
+        [| walkRight; walkUpRight; walkUp; walkUpLeft; walkLeft; walkDownLeft; walkDown; walkDownRight |] 
+        |> Seq.map (fun a -> a.key, a)
+        |> Map.ofSeq
 
     let animationKey angle =         
         if angle >= 337.5f<degrees> || angle < 22.5f<degrees> then Animation.MoveAnimation Animation.AnimationAngle.Right
@@ -168,7 +164,7 @@ module Player =
             let animationKey = animationKey newAngle
             let newAnimation = player.animations.[animationKey]
             let animation = 
-                if newAnimation = player.currentAnimation 
+                if newAnimation.key = player.currentAnimation.key
                     then Animation.update gametime player.currentAnimation 
                     else newAnimation
             { player with 
@@ -178,5 +174,6 @@ module Player =
         let newPlayer = 
             match input with
             | Some input -> apply input
-            | None -> { player with currentAnimation = Animation.update gametime player.currentAnimation }
+            // No input means player is dead or inactive etc... not that there is no input from a player.
+            | None -> player
         newPlayer

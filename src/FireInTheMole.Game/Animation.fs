@@ -1,5 +1,4 @@
 ﻿namespace FireInTheMole.Game
-open System.Diagnostics
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 
@@ -22,6 +21,7 @@ module Animation =
         | DeadAnimation of AnimationAngle
 
     type Animation = {
+        key: AnimationKey
         texture: Texture2D
         frames: Rectangle array
         fps: int
@@ -37,7 +37,8 @@ module Animation =
             Rectangle(offset', size)
         Array.init count cell
 
-    let create tx frameCount fps size offset = {
+    let create key tx frameCount fps size offset = {
+        key = key
         texture = tx
         frames = horizontalFrames frameCount size offset
         fps = fps
@@ -49,7 +50,6 @@ module Animation =
 
     let currentFrame animation = 
         let sourceRect = animation.frames.[animation.currentFrame]        
-        Debug.WriteLine (sprintf "Frame: %i = %A" animation.currentFrame sourceRect)
         sourceRect
 
     let reset animation = 
@@ -61,19 +61,18 @@ module Animation =
         let frameTimer, frame =             
             match animation.frameTimer + dt with
             | t when t >= animation.frameLength -> 
-                0f, (animation.currentFrame + 1) //% animation.frames.Length
+                0f, (animation.currentFrame + 1) % animation.frames.Length
             | t -> 
                 t + dt, animation.currentFrame
         let newAnimation = 
             { animation with
                 frameTimer = frameTimer
                 currentFrame = frame }
-        Debug.WriteLine (sprintf "%A" newAnimation)
         newAnimation
 
     let draw (sb : SpriteBatch) animation color rev (destination : Rectangle) =
         let source = currentFrame animation
-        let origin = source.Location.ToVector2()
+        let origin = Vector2.Zero
         let effects = 
             if rev then SpriteEffects.FlipHorizontally
             else SpriteEffects.None

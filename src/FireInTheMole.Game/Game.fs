@@ -60,10 +60,10 @@ type FireInTheMoleGame() as this =
 
     let loadPlayers() =
         let p1 = Player.create yellow PlayerIndex.One true (Vector2(100f, 100f))
-        let p2 = Player.create yellow PlayerIndex.Two false (Vector2(200f, 200f))
-        let p3 = Player.create yellow PlayerIndex.Three false (Vector2(300f, 300f))
-        let p4 = Player.create yellow PlayerIndex.Four false (Vector2(400f, 400f))
-        players <- [| p1; p2; p3; p4 |]
+        //let p2 = Player.create yellow PlayerIndex.Two false (Vector2(200f, 200f))
+        //let p3 = Player.create yellow PlayerIndex.Three false (Vector2(300f, 300f))
+        //let p4 = Player.create yellow PlayerIndex.Four false (Vector2(400f, 400f))
+        players <- [| p1; (*p2; p3; p4*) |]
 
     member this.Graphics = graphics
 
@@ -82,14 +82,12 @@ type FireInTheMoleGame() as this =
             |> Seq.map (fun p -> p, Player.getInput p)
             |> Seq.map (Player.update gametime)
             |> Array.ofSeq
-
         match Keyboard.GetState() with
         | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
         | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
         | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
         | KeyDown Keys.Escape -> this.Exit()
         | _ -> ()
-        
         base.Update(gametime)
 
     override this.Draw(gametime) =

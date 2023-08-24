@@ -1,6 +1,7 @@
 ﻿namespace FireInTheMole.Game
 
 
+[<RequireQualifiedAccess>]
 module Scene = 
 
     type Scene = 

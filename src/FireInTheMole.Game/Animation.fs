@@ -3,6 +3,7 @@ open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 
 
+[<RequireQualifiedAccess>]
 module Animation = 
 
     type AnimationAngle = 

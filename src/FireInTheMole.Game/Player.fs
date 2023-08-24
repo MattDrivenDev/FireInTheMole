@@ -3,6 +3,7 @@ open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 
 
+[<RequireQualifiedAccess>]
 module Player = 
 
     [<Literal>] 
@@ -11,11 +12,6 @@ module Player =
     let speed = 200f
     [<Literal>]
     let turnSpeed = 10f 
-
-    type PlayerState = 
-        | Idle
-        | Moving
-        | Dead
 
     type Player = {
         position: Vector2
@@ -28,7 +24,6 @@ module Player =
         color : Color
         animations: Map<Animation.AnimationKey, Animation.Animation>
         currentAnimation: Animation.Animation
-        state: PlayerState
     }
 
     type MovementDirection = 
@@ -40,7 +35,6 @@ module Player =
         | ForwardRight
         | BackwardLeft
         | BackwardRight
-
 
     type Input = {
         movement: MovementDirection option
@@ -117,7 +111,6 @@ module Player =
             color = color idx
             animations = animations
             currentAnimation = animations.[Animation.MoveAnimation Animation.AnimationAngle.Right]
-            state = Idle
         }
 
     let draw sb pixel player  =

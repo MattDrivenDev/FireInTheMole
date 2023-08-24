@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Helpers.fs" />
     <Compile Include="Animation.fs" />
+    <Compile Include="Collision.fs" />
     <Compile Include="Player.fs" />
     <Compile Include="Scene.fs" />
     <Compile Include="Game.fs" />

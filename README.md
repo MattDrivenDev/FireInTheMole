@@ -3,7 +3,7 @@ A game about moles mining with dynamite and blowing each other up (a Bomberstein
 
 ## TODO
  - [ ] Create the Map of animations, where the idle/movement/dead states are keys.
- - [ ] Change the animation based on the movement and direction of the player.
+ - [x] Change the animation based on the movement and direction of the player.
  - [ ] Load a Tiled map.
  - [ ] When rendering top-down, use an orthographic camera that follows the player.
  - [ ] Work on the AABB collision detection.

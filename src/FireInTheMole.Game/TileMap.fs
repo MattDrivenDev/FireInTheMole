@@ -138,7 +138,7 @@ module TileMap =
     let create (cm : ContentManager) map = 
         TiledIntegration.loadMap cm map
 
-    let drawTile (sb : SpriteBatch) pixel (tilemap : TileMap) (layer : TileMapLayer) (tile : Tile) = 
+    let drawTile (sb : SpriteBatch) (tilemap : TileMap) (layer : TileMapLayer) (tile : Tile) = 
         // Only draw active tiles
         if not tile.active then ()
         let xp = tile.key.x * tilemap.tileWidth
@@ -147,15 +147,15 @@ module TileMap =
         let c = Color.White
         sb.Draw(tile.texture, destination, tile.textureSource, c)
 
-    let drawLayer sb pixel tilemap layer =
+    let drawLayer sb tilemap layer =
         layer.tiles
         |> Seq.map (fun t -> t.Value)
-        |> Seq.iter (drawTile sb pixel tilemap layer)
+        |> Seq.iter (drawTile sb tilemap layer)
 
-    let draw sb pixel tilemap =
+    let draw sb tilemap =
         // Draw the layers in the correct order
         tilemap.layers
-        |> Seq.iter (drawLayer sb pixel tilemap)
+        |> Seq.iter (drawLayer sb tilemap)
 
     let getTileset (tilemap : TileMap) name = 
         Map.tryFind name tilemap.tilesets

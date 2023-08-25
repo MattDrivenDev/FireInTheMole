@@ -7,7 +7,7 @@ open Microsoft.Xna.Framework.Input
 module Player = 
 
     [<Literal>] 
-    let size = 64
+    let size = 192
     [<Literal>]
     let speed = 200f
     [<Literal>]
@@ -118,8 +118,7 @@ module Player =
             let radians = toRadians player.angle
             let c = (cos radians)
             let s = (sin radians) 
-            let finish = player.position + Vector2(c, s) * 100f
-            drawLine sb pixel player.position finish 1 player.color            
+            let finish = player.position + Vector2(c, s) * float32 size     
             let rev = 
                 match animationKey player.angle with
                 | Animation.MoveAnimation Animation.AnimationAngle.Left -> true
@@ -129,6 +128,7 @@ module Player =
             let destination = player.position - (player.size.ToVector2() / 2f)
             Rectangle(destination.ToPoint(), player.size)
             |> Animation.draw sb player.currentAnimation Color.White rev
+            drawLine sb pixel player.position finish 1 player.color
 
     /// We're only getting input for player one at the moment
     let getInput player =

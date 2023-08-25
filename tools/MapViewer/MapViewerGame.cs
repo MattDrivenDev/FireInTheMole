@@ -61,7 +61,6 @@ namespace MapViewer
             // Interesting....
             _camera.Rotate(0.01f * delta);
 
-
             base.Update(gameTime);
         }
 
@@ -74,7 +73,7 @@ namespace MapViewer
                 BlendState.AlphaBlend,
                 SamplerState.PointClamp,
                 transformMatrix: viewMatrix);
-            TileMap.draw(_spriteBatch, _pixel, _map);
+            TileMap.draw(_spriteBatch, _map);
             _spriteBatch.End();
             base.Draw(gameTime);
         }

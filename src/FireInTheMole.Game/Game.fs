@@ -3,6 +3,8 @@ open System
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 open Microsoft.Xna.Framework.Input
+open MonoGame.Extended
+open MonoGame.Extended.ViewportAdapters
 
 
 type FireInTheMoleGame() as this = 
@@ -18,6 +20,7 @@ type FireInTheMoleGame() as this =
     let mutable yellow = Unchecked.defaultof<Texture2D>
     let mutable players = Unchecked.defaultof<Player.Player[]>
     let mutable tilemap = Unchecked.defaultof<TileMap.TileMap>
+    let mutable camera = Unchecked.defaultof<OrthographicCamera>
 
     do
         this.Content.RootDirectory <- "Content"
@@ -39,11 +42,13 @@ type FireInTheMoleGame() as this =
             false,
             SurfaceFormat.Color,
             DepthFormat.Depth24Stencil8);
+        let adapter = new BoxingViewportAdapter(this.Window, this.GraphicsDevice, renderWidth, renderHeight)
+        camera <- new OrthographicCamera(adapter)
+        camera.Zoom <- scale
 
     let loadTextures() = 
         // A single pixel is useful for drawing lots of primitives
         pixel <- createPixelTexture2D this.GraphicsDevice
-
         // A circle could be drawn with pixels, but that nukes the framerate so
         // we'll create the texture once and reuse it
         circle <- new Texture2D(this.GraphicsDevice, Player.size, Player.size, false, SurfaceFormat.Color)
@@ -54,16 +59,11 @@ type FireInTheMoleGame() as this =
             if d < float32(Player.size / 2) then Color.White else Color.Transparent))
         |> Array.concat
         |> circle.SetData
-
         // Yellow mole spritesheet
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
     let loadPlayers() =
-        let p1 = Player.create yellow PlayerIndex.One true (Vector2(100f, 100f))
-        //let p2 = Player.create yellow PlayerIndex.Two false (Vector2(200f, 200f))
-        //let p3 = Player.create yellow PlayerIndex.Three false (Vector2(300f, 300f))
-        //let p4 = Player.create yellow PlayerIndex.Four false (Vector2(400f, 400f))
-        players <- [| p1; (*p2; p3; p4*) |]
+        players <- [| Player.create yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =
         tilemap <- TileMap.create this.Content "maps/grass/pillars"
@@ -82,10 +82,12 @@ type FireInTheMoleGame() as this =
         base.LoadContent()
 
     override this.Update(gametime) = 
+        tilemap <- TileMap.update gametime tilemap
         players <- players 
             |> Seq.map (fun p -> p, Player.getInput p)
             |> Seq.map (Player.update gametime)
             |> Array.ofSeq
+        camera.LookAt(players.[0].position)
         match Keyboard.GetState() with
         | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
         | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
@@ -94,16 +96,16 @@ type FireInTheMoleGame() as this =
         | _ -> ()
         base.Update(gametime)
 
-    override this.Draw(gametime) =
-        
+    override this.Draw(gametime) =        
         // First, we are drawing everything to the render target 
         this.GraphicsDevice.SetRenderTarget rt
         this.GraphicsDevice.Clear bg
-        sb.Begin()
+        let transform = camera.GetViewMatrix()
+        sb.Begin(transformMatrix=transform)
+        TileMap.draw sb tilemap 
         Seq.iter (Player.draw sb pixel) players
         sb.End()
         this.GraphicsDevice.SetRenderTarget null
-
         // Then we draw the render target to the screen
         let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
         let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
@@ -116,5 +118,4 @@ type FireInTheMoleGame() as this =
             RasterizerState.CullCounterClockwise)
         sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
         sb.End()
-
         base.Draw(gametime)

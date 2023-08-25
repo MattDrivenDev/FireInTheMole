@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoGame.Extended.Tiled", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoGame.Extended.Tweening", "lib\MonoGame.Extended\MonoGame.Extended.Tweening\MonoGame.Extended.Tweening.csproj", "{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapViewer", "tools\MapViewer\MapViewer.csproj", "{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +100,10 @@ Global
 		{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +122,7 @@ Global
 		{C63E15C7-1716-446F-B5EA-19DE30966A79} = {FC01CD5E-C65E-4A82-B4B0-30213F306903}
 		{5B3E373B-BC9A-4FC0-9FFD-4ED324F0A6B0} = {FC01CD5E-C65E-4A82-B4B0-30213F306903}
 		{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D} = {FC01CD5E-C65E-4A82-B4B0-30213F306903}
+		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8B1F87FD-D69A-414B-83B9-5E538B03C10E}

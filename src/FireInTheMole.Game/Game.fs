@@ -42,8 +42,7 @@ type FireInTheMoleGame() as this =
 
     let loadTextures() = 
         // A single pixel is useful for drawing lots of primitives
-        pixel <- new Texture2D(this.GraphicsDevice, 1, 1, false, SurfaceFormat.Color)
-        pixel.SetData([| Color.White |])
+        pixel <- createPixelTexture2D this.GraphicsDevice
 
         // A circle could be drawn with pixels, but that nukes the framerate so
         // we'll create the texture once and reuse it

@@ -24,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib\MonoGame.Extended\MonoGame.Extended.Content.Pipeline\MonoGame.Extended.Content.Pipeline.csproj" />
+    <ProjectReference Include="..\..\lib\MonoGame.Extended\MonoGame.Extended\MonoGame.Extended.csproj" />
     <ProjectReference Include="..\..\src\FireInTheMole.Game\FireInTheMole.Game.fsproj" />
     <ProjectReference Include="..\..\src\FireInTheMole\FireInTheMole.csproj" />
   </ItemGroup>

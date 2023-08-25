@@ -46,6 +46,7 @@ module TileMap =
         texture: Texture2D
         textureSource: Rectangle
         bounds: Collision.BoundingRectangle option
+        active: bool
     }
     and TileCoords = {
         x: int
@@ -74,7 +75,8 @@ module TileMap =
                   tilesetTileId = tt.GlobalIdentifier
                   bounds = None
                   texture = texture 
-                  textureSource = source }
+                  textureSource = source
+                  active = true }
             if tiledTile.IsBlank then None else Some (innerMapTile tiledTile)                
                 
 
@@ -137,6 +139,8 @@ module TileMap =
         TiledIntegration.loadMap cm map
 
     let drawTile (sb : SpriteBatch) pixel (tilemap : TileMap) (layer : TileMapLayer) (tile : Tile) = 
+        // Only draw active tiles
+        if not tile.active then ()
         let xp = tile.key.x * tilemap.tileWidth
         let yp = tile.key.y * tilemap.tileHeight
         let destination = Rectangle(xp, yp, tilemap.tileWidth, tilemap.tileHeight)
@@ -152,3 +156,19 @@ module TileMap =
         // Draw the layers in the correct order
         tilemap.layers
         |> Seq.iter (drawLayer sb pixel tilemap)
+
+    let getTileset (tilemap : TileMap) name = 
+        Map.tryFind name tilemap.tilesets
+
+    let getLayer (tilemap : TileMap) name = 
+        Seq.tryFind (fun l -> l.name = name) tilemap.layers
+
+    let getTile (layer : TileMapLayer) key =
+        Map.tryFind key layer.tiles
+
+    let destroyTile tile = 
+        { tile with 
+               bounds = None
+               active = false }
+
+    let update (gt : GameTime) (tilemap : TileMap) = tilemap

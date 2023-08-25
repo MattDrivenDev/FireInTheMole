@@ -43,6 +43,8 @@ module TileMap =
     and Tile = {
         key: TileCoords
         tilesetTileId: int
+        texture: Texture2D
+        textureSource: Rectangle
         bounds: Collision.BoundingRectangle option
     }
     and TileCoords = {
@@ -61,17 +63,25 @@ module TileMap =
     module private TiledIntegration = 
         open MonoGame.Extended.Tiled
 
-        let mapTile (tiledTile : TiledMapTile) = 
-            let key = { x = int tiledTile.X; y = int tiledTile.Y }
-            if tiledTile.IsBlank then None 
-            else Some { key = key
-                        tilesetTileId = tiledTile.GlobalIdentifier
-                        bounds = None}
+        let mapTile (tmx : TiledMap) (tiledTile : TiledMapTile) = 
+            let innerMapTile (tt : TiledMapTile) =
+                let key = { x = int tt.X; y = int tt.Y }
+                let tileset = tmx.GetTilesetByTileGlobalIdentifier tt.GlobalIdentifier
+                let texture = tileset.Texture
+                // This hardcoded 1 will be wrong if we have multiple tilesets in the map
+                let source = tileset.GetTileRegion (tt.GlobalIdentifier - 1)
+                { key = key
+                  tilesetTileId = tt.GlobalIdentifier
+                  bounds = None
+                  texture = texture 
+                  textureSource = source }
+            if tiledTile.IsBlank then None else Some (innerMapTile tiledTile)                
+                
 
-        let mapLayer (tiledLayer : TiledMapTileLayer) =
+        let mapLayer tmx (tiledLayer : TiledMapTileLayer) =
             let tiles = 
                 tiledLayer.Tiles 
-                |> Seq.choose mapTile
+                |> Seq.choose (mapTile tmx)
                 |> Seq.map (fun t -> t.key, t)
                 |> Map.ofSeq            
             { name = tiledLayer.Name
@@ -105,7 +115,7 @@ module TileMap =
             let layers = 
                 tmx.Layers 
                 |> Seq.choose tiledMapTileLayer
-                |> Seq.map mapLayer 
+                |> Seq.map (mapLayer tmx)
                 |> Array.ofSeq
             let tilesets = 
                 tmx.Tilesets
@@ -129,13 +139,9 @@ module TileMap =
     let drawTile (sb : SpriteBatch) pixel (tilemap : TileMap) (layer : TileMapLayer) (tile : Tile) = 
         let xp = tile.key.x * tilemap.tileWidth
         let yp = tile.key.y * tilemap.tileHeight
-        let rectangle = Rectangle(xp, yp, tilemap.tileWidth, tilemap.tileHeight)
-        let c = 
-            match layer.name with
-            | "Walls" -> Color.Gray
-            | "Dirt" -> Color.Brown
-            | _ -> Color.White
-        drawRectangle sb pixel rectangle c
+        let destination = Rectangle(xp, yp, tilemap.tileWidth, tilemap.tileHeight)
+        let c = Color.White
+        sb.Draw(tile.texture, destination, tile.textureSource, c)
 
     let drawLayer sb pixel tilemap layer =
         layer.tiles

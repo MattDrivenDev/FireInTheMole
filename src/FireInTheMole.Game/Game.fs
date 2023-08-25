@@ -17,6 +17,7 @@ type FireInTheMoleGame() as this =
     let mutable circle = Unchecked.defaultof<Texture2D>
     let mutable yellow = Unchecked.defaultof<Texture2D>
     let mutable players = Unchecked.defaultof<Player.Player[]>
+    let mutable tilemap = Unchecked.defaultof<TileMap.TileMap>
 
     do
         this.Content.RootDirectory <- "Content"
@@ -65,6 +66,9 @@ type FireInTheMoleGame() as this =
         //let p4 = Player.create yellow PlayerIndex.Four false (Vector2(400f, 400f))
         players <- [| p1; (*p2; p3; p4*) |]
 
+    let loadTilemap() =
+        tilemap <- TileMap.create this.Content "maps/grass/pillars"
+
     member this.Graphics = graphics
 
     override this.Initialize() =
@@ -75,6 +79,7 @@ type FireInTheMoleGame() as this =
         sb <- new SpriteBatch(this.GraphicsDevice)        
         loadTextures()
         loadPlayers()
+        loadTilemap()
         base.LoadContent()
 
     override this.Update(gametime) = 

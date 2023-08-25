@@ -115,7 +115,6 @@ module Player =
 
     let draw sb pixel player  =
         if player.active then  
-            debug (sprintf "Degrees: %f - Radians: %f" player.angle (toRadians player.angle))
             let radians = toRadians player.angle
             let c = (cos radians)
             let s = (sin radians) 

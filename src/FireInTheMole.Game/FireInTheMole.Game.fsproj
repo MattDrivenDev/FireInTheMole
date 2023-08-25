@@ -9,6 +9,7 @@
     <Compile Include="Helpers.fs" />
     <Compile Include="Animation.fs" />
     <Compile Include="Collision.fs" />
+    <Compile Include="TileMap.fs" />
     <Compile Include="Player.fs" />
     <Compile Include="Scene.fs" />
     <Compile Include="Game.fs" />
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\MonoGame.Extended\MonoGame.Extended.Tiled\MonoGame.Extended.Tiled.csproj" />
   </ItemGroup>
 
 </Project>

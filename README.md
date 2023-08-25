@@ -2,11 +2,12 @@
 A game about moles mining with dynamite and blowing each other up (a Bomberstein3D).
 
 ## TODO
- - [ ] Create the Map of animations, where the idle/movement/dead states are keys.
  - [x] Change the animation based on the movement and direction of the player.
- - [ ] Load a Tiled map.
+ - [x] Load a Tiled map.
  - [ ] When rendering top-down, use an orthographic camera that follows the player.
  - [ ] Work on the AABB collision detection.
+ - [ ] Apply collision detection to the player and the map.
+ - [ ] Bug: prototype janky collision detection... allow player to move flush up against the wall.
  - [x] Render mole instead of circle for player.
 
 ## But why F#?

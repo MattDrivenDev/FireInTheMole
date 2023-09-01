@@ -42,6 +42,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9AC1B5A1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapViewer", "tools\MapViewer\MapViewer.csproj", "{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Floored", "tools\Floored\Floored.csproj", "{47CBA5D3-0A55-4EF6-B18E-651F20E09371}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,10 @@ Global
 		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47CBA5D3-0A55-4EF6-B18E-651F20E09371}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47CBA5D3-0A55-4EF6-B18E-651F20E09371}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47CBA5D3-0A55-4EF6-B18E-651F20E09371}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47CBA5D3-0A55-4EF6-B18E-651F20E09371}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +129,7 @@ Global
 		{5B3E373B-BC9A-4FC0-9FFD-4ED324F0A6B0} = {FC01CD5E-C65E-4A82-B4B0-30213F306903}
 		{E5E89C71-DC86-4964-8CC7-8E38F5DBCD1D} = {FC01CD5E-C65E-4A82-B4B0-30213F306903}
 		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
+		{47CBA5D3-0A55-4EF6-B18E-651F20E09371} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8B1F87FD-D69A-414B-83B9-5E538B03C10E}

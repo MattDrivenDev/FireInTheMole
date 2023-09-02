@@ -166,6 +166,15 @@ module TileMap =
     let getTile (layer : TileMapLayer) key =
         Map.tryFind key layer.tiles
 
+    let getBroadphaseTiles (tilemap : TileMap) (min : Vector2) (max : Vector2) = 
+        let minTile = { x = int min.X / tilemap.tileWidth; y = int min.Y / tilemap.tileHeight }
+        let maxTile = { x = int max.X / tilemap.tileWidth; y = int max.Y / tilemap.tileHeight }
+        let tiles = 
+            [| for x in minTile.x .. maxTile.x do
+                for y in minTile.y .. maxTile.y do
+                    yield { x = x; y = y } |]
+        tiles
+
     let destroyTile tile = 
         { tile with 
                bounds = None

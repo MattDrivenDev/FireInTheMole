@@ -19,5 +19,6 @@ I've had quite a lot of experience in F#, and I'm fairly confident with it. One 
 So, consider this to be a kind of prototype++.
 
 ### Tools
-
  - MapViewer: used to quickly test tile map rendering, tile destruction, and an orthographic camera.
+ - Floored: to figure out how to do the floor texturing (Mode7 camera)... hopefully this will work!
+ - Collider: to figure out how to do the collision detection.

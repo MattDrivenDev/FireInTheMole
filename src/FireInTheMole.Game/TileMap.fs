@@ -45,7 +45,7 @@ module TileMap =
         tilesetTileId: int
         texture: Texture2D
         textureSource: Rectangle
-        bounds: Collision.BoundingRectangle option
+        //bounds: Collision.BoundingRectangle option
         active: bool
     }
     and TileCoords = {
@@ -73,7 +73,7 @@ module TileMap =
                 let source = tileset.GetTileRegion (tt.GlobalIdentifier - 1)
                 { key = key
                   tilesetTileId = tt.GlobalIdentifier
-                  bounds = None
+                  //bounds = None
                   texture = texture 
                   textureSource = source
                   active = true }
@@ -177,7 +177,7 @@ module TileMap =
 
     let destroyTile tile = 
         { tile with 
-               bounds = None
+               //bounds = None
                active = false }
 
     let update (gt : GameTime) (tilemap : TileMap) = tilemap

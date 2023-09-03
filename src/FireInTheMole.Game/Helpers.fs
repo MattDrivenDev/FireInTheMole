@@ -75,14 +75,14 @@ module Helpers =
         sb.Draw(tx, rect, color)
 
     let drawHollowRectangle (sb : SpriteBatch) (tx : Texture2D) (rect : Rectangle) (thickness : int32) (color : Color) =
-        let top = new Rectangle(rect.X, rect.Y, rect.Width, thickness)
-        let bottom = new Rectangle(rect.X, rect.Y + rect.Height - thickness, rect.Width, thickness)
-        let left = new Rectangle(rect.X, rect.Y, thickness, rect.Height)
-        let right = new Rectangle(rect.X + rect.Width - thickness, rect.Y, thickness, rect.Height)
-        drawRectangle sb tx top color
-        drawRectangle sb tx bottom color
-        drawRectangle sb tx left color
-        drawRectangle sb tx right color
+        let topLeft = new Vector2(float32 rect.X, float32 rect.Y)
+        let topRight = new Vector2(float32 rect.X + float32 rect.Width, float32 rect.Y)
+        let bottomRight = new Vector2(float32 rect.X + float32 rect.Width, float32 rect.Y + float32 rect.Height)
+        let bottomLeft = new Vector2(float32 rect.X, float32 rect.Y + float32 rect.Height)
+        drawLine sb tx topLeft topRight thickness color
+        drawLine sb tx topRight bottomRight thickness color
+        drawLine sb tx bottomRight bottomLeft thickness color
+        drawLine sb tx bottomLeft topLeft thickness color
 
     let drawCircle (sb : SpriteBatch) (center : Vector2) (radius : float32) (color : Color) =
         let tx = createCircleTexture2D sb.GraphicsDevice radius

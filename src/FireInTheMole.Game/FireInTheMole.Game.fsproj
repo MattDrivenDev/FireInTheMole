@@ -9,7 +9,7 @@
     <Compile Include="Helpers.fs" />
     <Compile Include="Cameras.fs" />
     <Compile Include="Animation.fs" />
-    <Compile Include="Collision.fs" />
+    <Compile Include="Collisions.fs" />
     <Compile Include="TileMap.fs" />
     <Compile Include="Player.fs" />
     <Compile Include="Scene.fs" />

@@ -36,24 +36,26 @@ namespace Collider
             _pixel = Helpers.createPixelTexture2D(GraphicsDevice);
             _circle = Helpers.createCircleTexture2D(GraphicsDevice, 32);
             _player = new Player(
-                position: new Vector2(100, 100),
-                radius: 32,
-                texture: _circle,
-                color: Color.Green);
+                position: new Vector2(200, 100),
+                size: new Vector2(64, 128),
+                texture: _pixel,
+                color: Color.Black);
 
             _terrain.Add(new Terrain(
-                position: new Vector2(400, 400),
+                position: new Vector2(55, 55),
                 size: new Vector2(100, 100),
                 texture: _pixel,
                 color: Color.Red));
+
             _terrain.Add(new Terrain(
-                position: new Vector2(900, 400),
-                size: new Vector2(75, 75),
+                position: new Vector2(400, 400),
+                size: new Vector2(600, 75),
                 texture: _pixel,
                 color: Color.Purple));
+
             _terrain.Add(new Terrain(
-                position: new Vector2(900, 600),
-                size: new Vector2(55, 111),
+                position: new Vector2(600, 200),
+                size: new Vector2(100, 300),
                 texture: _pixel,
                 color: Color.Yellow));
 

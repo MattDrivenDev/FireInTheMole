@@ -18,7 +18,7 @@ type FireInTheMoleGame() as this =
     let mutable pixel = Unchecked.defaultof<Texture2D>
     let mutable circle = Unchecked.defaultof<Texture2D>
     let mutable yellow = Unchecked.defaultof<Texture2D>
-    let mutable players = Unchecked.defaultof<Player.Player[]>
+    let mutable players = Unchecked.defaultof<Players.Player[]>
     let mutable tilemap = Unchecked.defaultof<TileMap.TileMap>
     let mutable camera = Unchecked.defaultof<OrthographicCamera>
 
@@ -51,19 +51,19 @@ type FireInTheMoleGame() as this =
         pixel <- createPixelTexture2D this.GraphicsDevice
         // A circle could be drawn with pixels, but that nukes the framerate so
         // we'll create the texture once and reuse it
-        circle <- new Texture2D(this.GraphicsDevice, Player.size, Player.size, false, SurfaceFormat.Color)
-        Array.init Player.size (fun y -> Array.init Player.size (fun x -> 
-            let dx = float32 (x - Player.size / 2)
-            let dy = float32 (y - Player.size / 2)
+        circle <- new Texture2D(this.GraphicsDevice, Players.size, Players.size, false, SurfaceFormat.Color)
+        Array.init Players.size (fun y -> Array.init Players.size (fun x -> 
+            let dx = float32 (x - Players.size / 2)
+            let dy = float32 (y - Players.size / 2)
             let d = dx * dx + dy * dy
-            if d < float32(Player.size / 2) then Color.White else Color.Transparent))
+            if d < float32(Players.size / 2) then Color.White else Color.Transparent))
         |> Array.concat
         |> circle.SetData
         // Yellow mole spritesheet
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
     let loadPlayers() =
-        players <- [| Player.create yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
+        players <- [| Players.create yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =
         tilemap <- TileMap.create this.Content "maps/grass/pillars"
@@ -84,8 +84,8 @@ type FireInTheMoleGame() as this =
     override this.Update(gametime) = 
         tilemap <- TileMap.update gametime tilemap
         players <- players 
-            |> Seq.map (fun p -> p, Player.getInput p)
-            |> Seq.map (Player.update gametime)
+            |> Seq.map (fun p -> p, Players.getInput p)
+            |> Seq.map (Players.update gametime)
             |> Array.ofSeq
         camera.LookAt(players.[0].position)
         match Keyboard.GetState() with
@@ -103,7 +103,7 @@ type FireInTheMoleGame() as this =
         let transform = camera.GetViewMatrix()
         sb.Begin(transformMatrix=transform)
         TileMap.draw sb tilemap 
-        Seq.iter (Player.draw sb pixel) players
+        Seq.iter (Players.draw sb pixel) players
         sb.End()
         this.GraphicsDevice.SetRenderTarget null
         // Then we draw the render target to the screen

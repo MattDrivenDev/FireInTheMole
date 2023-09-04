@@ -8,10 +8,10 @@
   <ItemGroup>
     <Compile Include="Helpers.fs" />
     <Compile Include="Cameras.fs" />
-    <Compile Include="Animation.fs" />
+    <Compile Include="Animations.fs" />
     <Compile Include="Collisions.fs" />
     <Compile Include="TileMap.fs" />
-    <Compile Include="Player.fs" />
+    <Compile Include="Players.fs" />
     <Compile Include="Scene.fs" />
     <Compile Include="Game.fs" />
   </ItemGroup>

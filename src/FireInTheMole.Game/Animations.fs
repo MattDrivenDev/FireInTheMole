@@ -4,7 +4,7 @@ open Microsoft.Xna.Framework.Graphics
 
 
 [<RequireQualifiedAccess>]
-module Animation = 
+module Animations = 
 
     type AnimationAngle = 
         | Up            // 12 o'clock

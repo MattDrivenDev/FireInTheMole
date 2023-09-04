@@ -4,7 +4,7 @@ open Microsoft.Xna.Framework.Input
 
 
 [<RequireQualifiedAccess>]
-module Player = 
+module Players = 
 
     [<Literal>] 
     let size = 192
@@ -22,8 +22,8 @@ module Player =
         index: PlayerIndex
         active: bool
         color : Color
-        animations: Map<Animation.AnimationKey, Animation.Animation>
-        currentAnimation: Animation.Animation
+        animations: Map<Animations.AnimationKey, Animations.Animation>
+        currentAnimation: Animations.Animation
     }
 
     type MovementDirection = 
@@ -52,50 +52,50 @@ module Player =
     let moveRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 0)
-        Animation.create k tx 2 4 s o
+        Animations.create k tx 2 4 s o
 
     let moveUpRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 512)
-        Animation.create k tx 2 4 s o
+        Animations.create k tx 2 4 s o
 
     let moveDownRightAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 1024)
-        Animation.create k tx 2 4 s o
+        Animations.create k tx 2 4 s o
 
     let moveDownAnimation k tx =
         let s = Point(256, 512)
         let o = Point(0, 1536)
-        Animation.create k tx 2 4 s o
+        Animations.create k tx 2 4 s o
 
     let moveUpAnimation k tx = 
         let s = Point(256, 512)
         let o = Point(0, 2048)
-        Animation.create k tx 2 4 s o
+        Animations.create k tx 2 4 s o
 
     let loadAnimations tx = 
-        let walkRight = moveRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.Right) tx
-        let walkUpRight = moveUpRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.UpRight) tx
-        let walkUp = moveUpAnimation (Animation.MoveAnimation Animation.AnimationAngle.Up) tx
-        let walkUpLeft = moveUpRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.UpLeft) tx        
-        let walkLeft = moveRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.Left) tx  
-        let walkDownLeft = moveDownRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.DownLeft) tx
-        let walkDown = moveDownAnimation (Animation.MoveAnimation Animation.AnimationAngle.Down) tx
-        let walkDownRight = moveDownRightAnimation (Animation.MoveAnimation Animation.AnimationAngle.DownRight) tx
+        let walkRight = moveRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.Right) tx
+        let walkUpRight = moveUpRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.UpRight) tx
+        let walkUp = moveUpAnimation (Animations.MoveAnimation Animations.AnimationAngle.Up) tx
+        let walkUpLeft = moveUpRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.UpLeft) tx        
+        let walkLeft = moveRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.Left) tx  
+        let walkDownLeft = moveDownRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.DownLeft) tx
+        let walkDown = moveDownAnimation (Animations.MoveAnimation Animations.AnimationAngle.Down) tx
+        let walkDownRight = moveDownRightAnimation (Animations.MoveAnimation Animations.AnimationAngle.DownRight) tx
         [| walkRight; walkUpRight; walkUp; walkUpLeft; walkLeft; walkDownLeft; walkDown; walkDownRight |] 
         |> Seq.map (fun a -> a.key, a)
         |> Map.ofSeq
 
     let animationKey angle =         
-        if angle >= 337.5f || angle < 22.5f then Animation.MoveAnimation Animation.AnimationAngle.Right
-        elif angle >= 22.5f && angle < 67.5f then Animation.MoveAnimation Animation.AnimationAngle.DownRight
-        elif angle >= 67.5f && angle < 112.5f then Animation.MoveAnimation Animation.AnimationAngle.Down
-        elif angle >= 112.5f && angle < 157.5f then Animation.MoveAnimation Animation.AnimationAngle.DownLeft
-        elif angle >= 157.5f && angle < 202.5f then Animation.MoveAnimation Animation.AnimationAngle.Left
-        elif angle >= 202.5f && angle < 247.5f then Animation.MoveAnimation Animation.AnimationAngle.UpLeft
-        elif angle >= 247.5f && angle < 292.5f then Animation.MoveAnimation Animation.AnimationAngle.Up
-        elif angle >= 292.5f && angle < 337.5f then Animation.MoveAnimation Animation.AnimationAngle.UpRight
+        if angle >= 337.5f || angle < 22.5f then Animations.MoveAnimation Animations.AnimationAngle.Right
+        elif angle >= 22.5f && angle < 67.5f then Animations.MoveAnimation Animations.AnimationAngle.DownRight
+        elif angle >= 67.5f && angle < 112.5f then Animations.MoveAnimation Animations.AnimationAngle.Down
+        elif angle >= 112.5f && angle < 157.5f then Animations.MoveAnimation Animations.AnimationAngle.DownLeft
+        elif angle >= 157.5f && angle < 202.5f then Animations.MoveAnimation Animations.AnimationAngle.Left
+        elif angle >= 202.5f && angle < 247.5f then Animations.MoveAnimation Animations.AnimationAngle.UpLeft
+        elif angle >= 247.5f && angle < 292.5f then Animations.MoveAnimation Animations.AnimationAngle.Up
+        elif angle >= 292.5f && angle < 337.5f then Animations.MoveAnimation Animations.AnimationAngle.UpRight
         else failwith "Invalid angle"
 
     let create tx idx active p = 
@@ -110,7 +110,7 @@ module Player =
             active = active
             color = color idx
             animations = animations
-            currentAnimation = animations.[Animation.MoveAnimation Animation.AnimationAngle.Right]
+            currentAnimation = animations.[Animations.MoveAnimation Animations.AnimationAngle.Right]
         }
 
     let draw sb pixel player  =
@@ -121,13 +121,13 @@ module Player =
             let finish = player.position + Vector2(c, s) * float32 size     
             let rev = 
                 match animationKey player.angle with
-                | Animation.MoveAnimation Animation.AnimationAngle.Left -> true
-                | Animation.MoveAnimation Animation.AnimationAngle.UpLeft -> true
-                | Animation.MoveAnimation Animation.AnimationAngle.DownLeft -> true
+                | Animations.MoveAnimation Animations.AnimationAngle.Left -> true
+                | Animations.MoveAnimation Animations.AnimationAngle.UpLeft -> true
+                | Animations.MoveAnimation Animations.AnimationAngle.DownLeft -> true
                 | _ -> false
             let destination = player.position - (player.size.ToVector2() / 2f)
             Rectangle(destination.ToPoint(), player.size)
-            |> Animation.draw sb player.currentAnimation Color.White rev
+            |> Animations.draw sb player.currentAnimation Color.White rev
             drawLine sb pixel player.position finish 1 player.color
 
     /// We're only getting input for player one at the moment
@@ -182,7 +182,7 @@ module Player =
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
                 if newAnimation.key = player.currentAnimation.key
-                    then Animation.update gametime player.currentAnimation 
+                    then Animations.update gametime player.currentAnimation 
                     else newAnimation
             { player with 
                 position = newPosition

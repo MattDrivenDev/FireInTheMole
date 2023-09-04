@@ -91,3 +91,8 @@ module Helpers =
     let drawHollowCircle (sb : SpriteBatch) (center : Vector2) (radius : float32) (thickness : int32) (color : Color) =
         let tx = createHollowCircleTexture2D sb.GraphicsDevice radius 2
         sb.Draw(tx, center, Nullable<Rectangle>(), color, 0f, new Vector2(radius), 1f, SpriteEffects.None, 0f)
+
+    let majorAxis (v : Vector2) = 
+        if abs v.X > abs v.Y 
+            then Vector2(float32 (sign v.X), 0f)
+            else Vector2(0f, float32 (sign v.Y))

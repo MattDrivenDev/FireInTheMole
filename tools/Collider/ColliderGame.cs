@@ -59,6 +59,12 @@ namespace Collider
                 texture: _pixel,
                 color: Color.Yellow));
 
+            _terrain.Add(new Terrain(
+                position: new Vector2(200, 600),
+                size: new Vector2(10, 100),
+                texture: _pixel,
+                color: Color.Green));
+
             base.LoadContent();
         }
 

@@ -46,16 +46,9 @@ namespace Collider
 
             Bounds = Collisions.updateVelocity(Bounds, velocity);
 
-            var collisions = terrain.Select(x => Collisions.predictCollisions(Bounds, x.Bounds));
-            foreach (var collision in collisions)
-            {
-                if (collision?.Value != null)
-                {
-                    Contacts.Add(collision.Value);
-                }
-            }
+            Contacts.AddRange(Collisions.predictCollisions(Bounds, terrain.Select(t => t.Bounds)));
 
-            //Bounds = Collisions.resolve(Bounds, Contacts);
+            Bounds = Collisions.resolve(Bounds, Contacts);
 
             Bounds = Collisions.move(Bounds);
         }
@@ -70,7 +63,11 @@ namespace Collider
                     location: contact.position.ToPoint(),
                     size: contact.size.ToPoint());
 
-                spriteBatch.Draw(Texture, destination, Color.Red);
+                var color = contact.normal == Vector2.UnitX || contact.normal == -Vector2.UnitX
+                    ? Color.Green
+                    : Color.Blue;
+
+                spriteBatch.Draw(Texture, destination, color);
             }
         }
     }

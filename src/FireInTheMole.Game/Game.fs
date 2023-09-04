@@ -11,7 +11,7 @@ type FireInTheMoleGame() as this =
     inherit Game()
 
     let bg = Color.Black
-    let graphics = new GraphicsDeviceManager(this)
+    let graphics = new GraphicsDeviceManager(this) 
     let mutable rt = Unchecked.defaultof<RenderTarget2D>
     let mutable scale = 1f
     let mutable sb = Unchecked.defaultof<SpriteBatch>
@@ -63,7 +63,9 @@ type FireInTheMoleGame() as this =
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
     let loadPlayers() =
-        players <- [| Players.create yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
+        let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height)
+        let options = RayCasting.createOptions RayCasting.MaxRayCount maxLength
+        players <- [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =
         tilemap <- TileMap.create this.Content "maps/grass/pillars"
@@ -77,15 +79,15 @@ type FireInTheMoleGame() as this =
     override this.LoadContent() =
         sb <- new SpriteBatch(this.GraphicsDevice)        
         loadTextures()
-        loadPlayers()
         loadTilemap()
+        loadPlayers()
         base.LoadContent()
 
     override this.Update(gametime) = 
         tilemap <- TileMap.update gametime tilemap
         players <- players 
             |> Seq.map (fun p -> p, Players.getInput p)
-            |> Seq.map (Players.update gametime)
+            |> Seq.map (Players.update gametime tilemap)
             |> Array.ofSeq
         camera.LookAt(players.[0].position)
         match Keyboard.GetState() with

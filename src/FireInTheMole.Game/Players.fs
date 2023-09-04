@@ -24,6 +24,7 @@ module Players =
         color : Color
         animations: Map<Animations.AnimationKey, Animations.Animation>
         currentAnimation: Animations.Animation
+        rayCaster: RayCasting.RayCaster 
     }
 
     type MovementDirection = 
@@ -98,7 +99,7 @@ module Players =
         elif angle >= 292.5f && angle < 337.5f then Animations.MoveAnimation Animations.AnimationAngle.UpRight
         else failwith "Invalid angle"
 
-    let create tx idx active p = 
+    let create options map tx idx active p = 
         let animations = loadAnimations tx
         {
             position = p
@@ -111,6 +112,7 @@ module Players =
             color = color idx
             animations = animations
             currentAnimation = animations.[Animations.MoveAnimation Animations.AnimationAngle.Right]
+            rayCaster = RayCasting.create options map p 0f
         }
 
     let draw sb pixel player  =
@@ -157,7 +159,7 @@ module Players =
             }
             else None
 
-    let update (gametime : GameTime) (player, input) =
+    let update (gametime : GameTime) map (player, input) =
         let deltatime = gametime.ElapsedGameTime.TotalSeconds
         let apply input = 
             let newAngle = 
@@ -178,6 +180,7 @@ module Players =
                 | Some BackwardRight -> Vector2(-c, -s) + Vector2(-s, c)
                 | None -> Vector2.Zero                
             let newPosition = player.position + normVector2 positionDelta * player.speed * float32(deltatime)
+            let newRayCaster = RayCasting.update player.rayCaster map newPosition newAngle
             let newAnimationKey = animationKey newAngle
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
@@ -187,10 +190,11 @@ module Players =
             { player with 
                 position = newPosition
                 angle = newAngle
-                currentAnimation = animation }
-        let newPlayer = 
-            match input with
-            | Some input -> apply input
+                currentAnimation = animation
+                rayCaster = newRayCaster}
+        match input with
+        | Some input -> apply input
+        | None -> 
             // No input means player is dead or inactive etc... not that there is no input from a player.
-            | None -> player
-        newPlayer
+            let newRayCaster = RayCasting.update player.rayCaster map player.position player.angle
+            { player with rayCaster = newRayCaster }

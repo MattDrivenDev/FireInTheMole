@@ -24,6 +24,13 @@ module TileMap =
     and TilesetTile = {
         id: int
     }
+    
+    [<Struct>]
+    type TileCoords = 
+        {
+            x: int
+            y: int
+        }
 
     type TileMap = {
         name: string
@@ -47,10 +54,6 @@ module TileMap =
         textureSource: Rectangle
         //bounds: Collision.BoundingRectangle option
         active: bool
-    }
-    and TileCoords = {
-        x: int
-        y: int
     }
 
     // --------------------------------------------------------------------
@@ -181,3 +184,5 @@ module TileMap =
                active = false }
 
     let update (gt : GameTime) (tilemap : TileMap) = tilemap
+
+    let coords x y = { x = x; y = y }

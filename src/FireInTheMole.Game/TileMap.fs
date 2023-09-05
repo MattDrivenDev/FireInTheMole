@@ -186,3 +186,22 @@ module TileMap =
     let update (gt : GameTime) (tilemap : TileMap) = tilemap
 
     let coords x y = { x = x; y = y }
+
+    let toTileCoords (tilemap : TileMap) (position : Vector2) = 
+        let x = int position.X / tilemap.tileWidth
+        let y = int position.Y / tilemap.tileHeight
+        coords x y
+
+    /// Returns the tile at a given position if it exists and is collidable, else None.
+    let getCollidableTile (tilemap : TileMap) (coords : TileCoords) : Tile option = 
+        // There are two collidable layers - Walls and Dirt
+        let wallLayer = getLayer tilemap "Walls"
+        let dirtLayer = getLayer tilemap "Dirt"
+        match wallLayer, dirtLayer with
+        | None, None -> None
+        | Some walls, None -> getTile walls coords
+        | None, Some dirt -> getTile dirt coords
+        | Some walls, Some dirt -> 
+            match getTile walls coords with
+            | Some tile -> Some tile
+            | None -> getTile dirt coords

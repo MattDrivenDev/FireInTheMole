@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Floored", "tools\Floored\Fl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Collider", "tools\Collider\Collider.csproj", "{3C4BE1A8-8DAB-4CE5-839C-DC4A9437C6FB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stantz", "tools\Stantz\Stantz.csproj", "{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +118,10 @@ Global
 		{3C4BE1A8-8DAB-4CE5-839C-DC4A9437C6FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C4BE1A8-8DAB-4CE5-839C-DC4A9437C6FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C4BE1A8-8DAB-4CE5-839C-DC4A9437C6FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -137,6 +143,7 @@ Global
 		{0E13A9DD-9F87-4F80-8E50-98DA5BD64704} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
 		{47CBA5D3-0A55-4EF6-B18E-651F20E09371} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
 		{3C4BE1A8-8DAB-4CE5-839C-DC4A9437C6FB} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
+		{56B67DB6-7FD9-4620-B7B3-2E2A5E4ED99F} = {9AC1B5A1-4192-4771-B6A7-3BE955ABAB92}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8B1F87FD-D69A-414B-83B9-5E538B03C10E}

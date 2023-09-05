@@ -63,8 +63,8 @@ type FireInTheMoleGame() as this =
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
     let loadPlayers() =
-        let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height)
-        let options = RayCasting.createOptions RayCasting.MaxRayCount maxLength
+        let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height) |> int
+        let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength
         players <- [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =

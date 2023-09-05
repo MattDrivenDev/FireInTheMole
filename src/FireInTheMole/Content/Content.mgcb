@@ -24,6 +24,11 @@
 /processor:TiledMapProcessor
 /build:Maps/Grass/Rooms.tmx
 
+#begin Maps/Snow/BigEmpty.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Maps/Snow/BigEmpty.tmx
+
 #begin Maps/Snow/NoWayIn.tmx
 /importer:TiledMapImporter
 /processor:TiledMapProcessor

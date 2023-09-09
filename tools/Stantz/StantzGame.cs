@@ -14,6 +14,7 @@ namespace Stantz
         Texture2D _pixel;
         Cameras.Camera _camera;
         Player _player;
+        SpriteFont _font;
 
         public StantzGame()
         {
@@ -33,12 +34,13 @@ namespace Stantz
 
         protected override void LoadContent()
         {
+            _font = Content.Load<SpriteFont>("fonts/text");
             _pixel = Helpers.createPixelTexture2D(GraphicsDevice);
             _map = TileMap.create(this.Content, "maps/snow/bigempty");
 
-            var mapCenter = new Vector2(_map.widthInPixels / 2, _map.heightInPixels / 2);
-            var angleInDegrees = 90f;
-            var zoom = 0.25f;
+            //var mapCenter = new Vector2(_map.widthInPixels / 2, _map.heightInPixels / 2);
+            var mapCenter = new Vector2(256+128, 256 + 128);
+            var zoom = 0.75f;
 
             _camera = Cameras.createCamera(
                 GraphicsDevice.Viewport,
@@ -47,16 +49,17 @@ namespace Stantz
                 zoom);
 
             var options = RayCasting.createOptions(
-                90f,
-                _graphics.PreferredBackBufferWidth / 2,
-                Math.Max(_map.widthInPixels, _map.heightInPixels));
+                fov: 90f,
+                count: _graphics.PreferredBackBufferWidth / 2,
+                maxLengthInTiles: Math.Max(_map.width, _map.width),
+                correctFishEye: false);;
 
+            var angleInDegrees = 0f;
             var rayCaster = RayCasting.create(
                 options,
                 _map,
                 mapCenter,
                 angleInDegrees);
-
             var playerSize = new Vector2(20f, 20f);
             _player = new Player(rayCaster, mapCenter, playerSize, angleInDegrees);
 
@@ -82,7 +85,9 @@ namespace Stantz
 
         protected override void Draw(GameTime gameTime)
         {
-            Window.Title = $"Angle: {_player.AngleInDegrees}";
+            Window.Title = $"FPS: {(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString("0.00")}" +
+                $"Angle: {_player.AngleInDegrees}; " +
+                $"Zoom: {_camera.zoom}";
 
             GraphicsDevice.Clear(Color.LightBlue);
 
@@ -93,11 +98,30 @@ namespace Stantz
                 SamplerState.PointClamp,
                 transformMatrix: viewMatrix);
             
-            TileMap.draw(_spriteBatch, _map);
+            TileMap.drawWithCoords(_spriteBatch, _map, _font);
             _player.Draw(_spriteBatch);
+
             
+            //_spriteBatch.End();
+
+
+            //_spriteBatch.Begin();
+            var zeroDegrees = MathHelper.ToRadians(0f);
+            var ninetyDegrees = MathHelper.ToRadians(90f);
+            var oneEightyDegrees = MathHelper.ToRadians(180f);
+            var twoSeventyDegrees = MathHelper.ToRadians(270f);
+            var zeroDegreesVector = new Vector2((float)Math.Cos(zeroDegrees), (float)Math.Sin(zeroDegrees)) * 200;
+            var ninetyDegreesVector = new Vector2((float)Math.Cos(ninetyDegrees), (float)Math.Sin(ninetyDegrees)) * 200;
+            var oneEightyDegreesVector = new Vector2((float)Math.Cos(oneEightyDegrees), (float)Math.Sin(oneEightyDegrees)) * 200;
+            var twoSeventyDegreesVector = new Vector2((float)Math.Cos(twoSeventyDegrees), (float)Math.Sin(twoSeventyDegrees)) * 200;
+
+            Helpers.drawCircle(_spriteBatch, _player.Position + zeroDegreesVector, 10, Color.Red);
+            Helpers.drawCircle(_spriteBatch, _player.Position + ninetyDegreesVector, 10, Color.Magenta);
+            Helpers.drawCircle(_spriteBatch, _player.Position + oneEightyDegreesVector, 10, Color.DarkCyan);
+            Helpers.drawCircle(_spriteBatch, _player.Position + twoSeventyDegreesVector, 10, Color.Blue);
+
             _spriteBatch.End();
-            
+
             base.Draw(gameTime);
         }
     }

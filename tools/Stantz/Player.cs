@@ -35,15 +35,17 @@ namespace Stantz
             var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             var rotation = 0f;
-            if (Keyboard.GetState().IsKeyDown(Keys.Left))   rotation += -1f;
-            if (Keyboard.GetState().IsKeyDown(Keys.Right))  rotation -= -1f;
+            if (Keyboard.GetState().IsKeyDown(Keys.Left))   rotation -= 1f;
+            if (Keyboard.GetState().IsKeyDown(Keys.Right))  rotation += 1f;
             rotation *= delta * RotationSpeed;
             AngleInDegrees += rotation;
             AngleInDegrees = Helpers.normAngle(AngleInDegrees);
 
             var velocity = Vector2.Zero;
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))     velocity += -Vector2.UnitY;  
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))   velocity += Vector2.UnitY;   
+            if (Keyboard.GetState().IsKeyDown(Keys.W)) velocity += -Vector2.UnitY;  
+            if (Keyboard.GetState().IsKeyDown(Keys.S)) velocity += Vector2.UnitY;
+            if (Keyboard.GetState().IsKeyDown(Keys.A)) velocity += -Vector2.UnitX;
+            if (Keyboard.GetState().IsKeyDown(Keys.D)) velocity += Vector2.UnitX;
             if (velocity != Vector2.Zero)                   velocity.Normalize();
             velocity *= delta * Speed / cameraZoom;
             Position += velocity;
@@ -55,9 +57,9 @@ namespace Stantz
         {
             if (_pixel == null) _pixel = Helpers.createPixelTexture2D(spriteBatch.GraphicsDevice);
             var angleInRadians = MathHelper.ToRadians(AngleInDegrees);
-            var cos = MathF.Cos(angleInRadians);
-            var sin = MathF.Sin(angleInRadians);            
-            var finish = Position - new Vector2(sin * 100, cos * 100);
+            var x = MathF.Cos(angleInRadians) * 100;
+            var y = MathF.Sin(angleInRadians) * 100;
+            var finish = Position + new Vector2(x, y);
             RayCasting.draw(spriteBatch, Color.Yellow, RayCaster);
             Helpers.drawLine(spriteBatch, _pixel, Position, finish, 2, Color.Black);
             Helpers.drawCircle(spriteBatch, Position, Size.X, Color.Red);

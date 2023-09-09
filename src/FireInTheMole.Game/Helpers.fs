@@ -19,6 +19,10 @@ module Helpers =
         let angle = angle % 360f
         if angle < 0f then angle + 360f else angle
 
+    let normRadianAngle angleInRadians = 
+        let angle = angleInRadians % (2f * MathF.PI)
+        if angle < 0f then angle + 2f * MathF.PI else angle
+
     let normVector2 (vector : Vector2) = 
         if vector = Vector2.Zero then vector else Vector2.Normalize(vector)
 

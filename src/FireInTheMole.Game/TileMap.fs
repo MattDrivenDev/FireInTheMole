@@ -141,7 +141,7 @@ module TileMap =
     let create (cm : ContentManager) map = 
         TiledIntegration.loadMap cm map
 
-    let drawTile (sb : SpriteBatch) (tilemap : TileMap) (layer : TileMapLayer) (tile : Tile) = 
+    let drawTile (sb : SpriteBatch) (tilemap : TileMap) (font : SpriteFont option) (tile : Tile)  = 
         // Only draw active tiles
         if not tile.active then ()
         let xp = tile.key.x * tilemap.tileWidth
@@ -149,16 +149,24 @@ module TileMap =
         let destination = Rectangle(xp, yp, tilemap.tileWidth, tilemap.tileHeight)
         let c = Color.White
         sb.Draw(tile.texture, destination, tile.textureSource, c)
+        match font with
+        | Some f -> sb.DrawString(f, (sprintf "%A" tile.key), Vector2(float32 xp, float32 yp), Color.Magenta)
+        | None -> ()
 
-    let drawLayer sb tilemap layer =
+    let drawLayer sb tilemap font layer  =
         layer.tiles
         |> Seq.map (fun t -> t.Value)
-        |> Seq.iter (drawTile sb tilemap layer)
+        |> Seq.iter (drawTile sb tilemap font)
 
     let draw sb tilemap =
         // Draw the layers in the correct order
         tilemap.layers
-        |> Seq.iter (drawLayer sb tilemap)
+        |> Seq.iter (drawLayer sb tilemap None)
+
+    let drawWithCoords sb tilemap font =
+        // Draw the layers in the correct order
+        tilemap.layers
+        |> Seq.iter (drawLayer sb tilemap (Some font))
 
     let getTileset (tilemap : TileMap) name = 
         Map.tryFind name tilemap.tilesets
@@ -188,9 +196,13 @@ module TileMap =
     let coords x y = { x = x; y = y }
 
     let toTileCoords (tilemap : TileMap) (position : Vector2) = 
+        let wrap n = 
+            if n < 0 then n + tilemap.width
+            elif n >= tilemap.width then n - tilemap.width
+            else n
         let x = int position.X / tilemap.tileWidth
         let y = int position.Y / tilemap.tileHeight
-        coords x y
+        coords (wrap x) (wrap y)
 
     /// Returns the tile at a given position if it exists and is collidable, else None.
     let getCollidableTile (tilemap : TileMap) (coords : TileCoords) : Tile option = 

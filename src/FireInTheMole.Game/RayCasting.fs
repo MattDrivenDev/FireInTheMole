@@ -27,8 +27,9 @@ module RayCasting =
         {
             count: int
             halfCount: int
-            maxLength: int
+            maxLengthInTiles: int
             fov: float32
+            correctFishEye: bool
         }
 
     type RayCaster = 
@@ -40,12 +41,13 @@ module RayCasting =
             map: TileMap.TileMap
         }
 
-    let createOptions fov count maxLength = 
+    let createOptions fov count maxLengthInTiles correctFishEye = 
         {
             count = count
             halfCount = count / 2
-            maxLength = maxLength
+            maxLengthInTiles = maxLengthInTiles
             fov = fov
+            correctFishEye = correctFishEye
         }
 
     let create (options : Options) map origin angleInDegrees =
@@ -60,8 +62,10 @@ module RayCasting =
     /// Draws the rays to the screen which is useful for debugging
     let draw (sb : SpriteBatch) (c : Color) (rayCaster : RayCaster) = 
         let tx = createPixelTexture2D sb.GraphicsDevice
+        let mutable rectColor = Color.Magenta
+        let rect = Rectangle(256, 0, 256, 256)
         let drawOne (ray : Ray) =
-            let finish = rayCaster.origin + Vector2(ray.depth * ray.sin, ray.depth * ray.cos)
+            let finish = rayCaster.origin + Vector2(ray.depth * ray.cos, ray.depth * ray.sin)
             drawLine sb tx rayCaster.origin finish 2 c
         Seq.iter drawOne rayCaster.rays
 
@@ -69,101 +73,93 @@ module RayCasting =
     /// There is quite a lot of mutability in this function, but: 
     /// 1. It's a performance critical function
     /// 2. It's a translation of a C# version which was also performance critical
-    let update (rayCaster : RayCaster) map origin angleInDegrees =
+    let update (rayCaster : RayCaster) (map : TileMap.TileMap) (origin : Vector2) angleInDegrees =
         let avoidDivisionByZero = 0.0001f
-        let options = rayCaster.options
+        let originX = origin.X / float32 map.tileWidth
+        let originY = origin.Y / float32 map.tileHeight
+        let originCoords = TileMap.toTileCoords map origin
+        let mapX, mapY = originCoords.x, originCoords.y
         let angleInRadians = toRadians angleInDegrees
-        let fovInRadians = toRadians options.fov
+        let fovInRadians = toRadians rayCaster.options.fov
         let halfFovInRadians = fovInRadians / 2.0f
-        let rayAngleDeltaInRadians = fovInRadians / float32 options.count
-        let coords = TileMap.toTileCoords map origin
-        let mutable rayAngleInRadians = angleInRadians - halfFovInRadians + avoidDivisionByZero        
-        for i in 0 .. options.count - 1 do
-            let raySin = sin rayAngleInRadians
-            let rayCos = cos rayAngleInRadians
-            let mutable horizontal = Vector3.Zero
-            let mutable vertical = Vector3.Zero
-            let mutable delta = Vector3.Zero
-            let mutable depth = 0.0f
-            let mutable offset = 0.0f
-            let mutable horizontalCoords : TileMap.TileCoords = { x = 0; y = 0 }
-            let mutable verticalCoords : TileMap.TileCoords = { x = 0; y = 0 }
+        let rayAngleDeltaInRadians = fovInRadians / float32 rayCaster.options.count
+        let mutable rayAngleInRadians = angleInRadians - halfFovInRadians + avoidDivisionByZero
+        for i in 0 .. rayCaster.options.count - 1 do
+            // Setup variables for the ray
+            let sin = MathF.Sin(rayAngleInRadians)
+            let cos = MathF.Cos(rayAngleInRadians)
+            let mutable horizontalX = 0f
+            let mutable horizontalY = 0f
+            let mutable horizontalDepth = 0f
+            let mutable verticalX = 0f
+            let mutable verticalY = 0f
+            let mutable verticalDepth = 0f
+            let mutable deltaX = 0f
+            let mutable deltaY = 0f
+            let mutable deltaDepth = 0f
+            let mutable depth = 0f
+            let mutable tile = Unchecked.defaultof<TileMap.Tile>
+            let mutable textureOffset = 0f
             let mutable horizontalTile : TileMap.Tile option = None
             let mutable verticalTile : TileMap.Tile option = None
-            // Perform the horizontal calculations
-            horizontal.Y <- if raySin > 0f then float32 coords.y + 1f else float32 coords.y - avoidDivisionByZero
-            delta.Y <- if raySin > 0f then 1f else -1f
-            horizontal.Z <- (horizontal.Y - origin.Y) / raySin
-            horizontal.X <- (origin.X + horizontal.Z * rayCos)
-            delta.Z <- delta.Y / raySin
-            delta.X <- delta.Z * rayCos
-            for j in 0 .. options.maxLength - 1 do
+            // Perform horizontal calculations for the ray
+            horizontalY <- if sin > 0f then (float32 mapY) + 1f else (float32 mapY) - avoidDivisionByZero
+            deltaY <- if sin > 0f then 1f else -1f
+            horizontalDepth <- (horizontalY - originY) / sin
+            horizontalX <- originX + (horizontalDepth * cos)
+            deltaDepth <- deltaY / sin
+            deltaX <- deltaDepth * cos
+            for j in 0 .. rayCaster.options.maxLengthInTiles do
                 if horizontalTile.IsNone then
-                    horizontalCoords <-
-                        {
-                            x = Math.Clamp(int horizontal.X, 0, map.width - 1)
-                            y = Math.Clamp(int horizontal.Y, 0, map.height - 1) 
-                        }
-                    match TileMap.getCollidableTile map horizontalCoords with
-                    | Some t -> 
-                        horizontalTile <- Some t
-                    | None ->
-                        horizontal.X <- horizontal.X + delta.X
-                        horizontal.Y <- horizontal.Y + delta.Y
-                        horizontal.Z <- horizontal.Z + delta.Z
-            // Perform the vertical calculations
-            vertical.X <- if rayCos > 0f then float32 coords.x + 1f else float32 coords.x - avoidDivisionByZero
-            delta.X <- if rayCos > 0f then 1f else -1f
-            vertical.Z <- (vertical.X - origin.X) / rayCos
-            vertical.Y <- (origin.Y + vertical.Z * raySin)
-            delta.Z <- delta.X / rayCos
-            delta.Y <- delta.Z * raySin
-            for j in 0 .. options.maxLength - 1 do
+                    let horizontalMapX = Math.Clamp(int horizontalX, 0, map.width - 1)
+                    let horizontalMapY = Math.Clamp(int horizontalY, 0, map.height - 1)
+                    match TileMap.getCollidableTile map { x = horizontalMapX; y = horizontalMapY } with
+                    | Some t -> horizontalTile <- Some t
+                    | None -> 
+                        horizontalX <- horizontalX + deltaX
+                        horizontalY <- horizontalY + deltaY
+                        horizontalDepth <- horizontalDepth + deltaDepth
+            // Perform vertical calculations for the ray
+            verticalX <- if cos > 0f then (float32 mapX) + 1f else (float32 mapX) - avoidDivisionByZero
+            deltaX <- if cos > 0f then 1f else -1f
+            verticalDepth <- (verticalX - originX) / cos
+            verticalY <- originY + (verticalDepth * sin)
+            deltaDepth <- deltaX / cos
+            deltaY <- deltaDepth * sin
+            for j in 0 .. rayCaster.options.maxLengthInTiles do
                 if verticalTile.IsNone then
-                    verticalCoords <- 
-                        {
-                            x = Math.Clamp(int vertical.X, 0, map.width - 1)
-                            y = Math.Clamp(int vertical.Y, 0, map.height - 1) 
-                        }
-                    match TileMap.getCollidableTile map verticalCoords with
-                    | Some t -> 
-                        verticalTile <- Some t
-                    | None ->
-                        vertical.X <- vertical.X + delta.X
-                        vertical.Y <- vertical.Y + delta.Y
-                        vertical.Z <- vertical.Z + delta.Z
-            // Traversal complete - determine which tile is closer
-            let mutable tileCoords : TileMap.TileCoords = { x = 0; y = 0 }
-            let mutable tile : TileMap.Tile = Unchecked.defaultof<TileMap.Tile>
-            if vertical.Z < horizontal.Z then
-                tileCoords <- verticalCoords
+                    let verticalMapX = Math.Clamp(int verticalX, 0, map.width - 1)
+                    let verticalMapY = Math.Clamp(int verticalY, 0, map.height - 1)
+                    match TileMap.getCollidableTile map { x = verticalMapX; y = verticalMapY } with
+                    | Some t -> verticalTile <- Some t
+                    | None -> 
+                        verticalX <- verticalX + deltaX
+                        verticalY <- verticalY + deltaY
+                        verticalDepth <- verticalDepth + deltaDepth
+            // Determine which of the two tiles is closer to the origin
+            if verticalDepth < horizontalDepth then
                 tile <- verticalTile.Value
-                depth <- vertical.Z
-                vertical.Y <- vertical.Y % 1.0f
-                offset <- if rayCos > 0f then vertical.Y else 1.0f - vertical.Y
+                depth <- verticalDepth
+                verticalY <- verticalY % 1f
+                textureOffset <- if cos > 0f then verticalY else 1f - verticalY
             else
-                tileCoords <- horizontalCoords
                 tile <- horizontalTile.Value
-                depth <- horizontal.Z
-                horizontal.X <- horizontal.X % 1.0f
-                offset <- if raySin > 0f then 1.0f - horizontal.X else horizontal.X
-            // Fix the fisheye effect
-            depth <- depth * cos (rayAngleInRadians - angleInRadians)
-            // Scale the tile by the tile width to get the actual distance
-            depth <- depth// * float32 map.tileWidth
-            // Use the data we've collected to create a ray
+                depth <- horizontalDepth
+                horizontalX <- horizontalX % 1f
+                textureOffset <- if sin > 0f then 1f - horizontalX else horizontalX
+            // Fix the fish-eye effect
+            if rayCaster.options.correctFishEye then 
+                depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
+            //depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
             let ray = 
                 {
-                    sin = raySin
-                    cos = rayCos
-                    depth = depth
-                    tileCoords = tileCoords
+                    sin = sin
+                    cos = cos
+                    depth = depth * float32 map.tileWidth
                     tile = tile
-                    tileOffset = offset
-                }            
-            // FSharp arrays are mutable so we can just assign to them
+                    tileOffset = textureOffset
+                    tileCoords = tile.key
+                }
             rayCaster.rays.[i] <- ray
-            // And update the angle for the next ray
-            rayAngleInRadians <- rayAngleInRadians + rayAngleDeltaInRadians        
-        // Finally, return an updated copy of the rayCaster
+            rayAngleInRadians <- rayAngleInRadians + rayAngleDeltaInRadians
         { rayCaster with origin = origin; angleInDegrees = angleInDegrees; map = map }

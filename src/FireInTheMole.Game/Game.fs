@@ -64,7 +64,7 @@ type FireInTheMoleGame() as this =
 
     let loadPlayers() =
         let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height) |> int
-        let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength
+        let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength true
         players <- [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =

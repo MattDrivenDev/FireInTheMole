@@ -14,6 +14,13 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Fonts/text.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/text.spritefont
+
 #begin Maps/Grass/Pillars.tmx
 /importer:TiledMapImporter
 /processor:TiledMapProcessor
@@ -23,6 +30,11 @@
 /importer:TiledMapImporter
 /processor:TiledMapProcessor
 /build:Maps/Grass/Rooms.tmx
+
+#begin Maps/Snow/BigEmpty.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Maps/Snow/BigEmpty.tmx
 
 #begin Maps/Snow/NoWayIn.tmx
 /importer:TiledMapImporter

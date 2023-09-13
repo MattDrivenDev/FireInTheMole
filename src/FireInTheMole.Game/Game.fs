@@ -71,6 +71,8 @@ type FireInTheMoleGame() as this =
     let loadTilemap() =
         tilemap <- TileMap.create this.Content "maps/grass/pillars"
 
+    let loadFonts() = Fonts.loadFonts this.Content
+    
     let loadPauseMenu() =        
         scene <- Scenes.createPauseMenuScene()
         Scenes.load scene
@@ -83,14 +85,16 @@ type FireInTheMoleGame() as this =
     
     override this.LoadContent() =
         sb <- new SpriteBatch(this.GraphicsDevice)    
-        scene <- Scenes.createGameScene()
         loadTextures()
         loadTilemap()
         loadPlayers()
+        loadFonts()
+        scene <- Scenes.createGameScene()
         base.LoadContent()
 
     override this.Update(gametime) =
         scene <- Scenes.update gametime scene
+        if scene = Scenes.Quit then this.Exit()
         match Keyboard.GetState() with
         | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
         | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
@@ -125,8 +129,6 @@ type FireInTheMoleGame() as this =
             DepthStencilState.None,
             RasterizerState.CullCounterClockwise)
         sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
+        Scenes.draw sb pixel scene
         sb.End()
-
-        Scenes.draw this.GraphicsDevice scene
-
         base.Draw(gametime)

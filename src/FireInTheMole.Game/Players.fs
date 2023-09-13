@@ -9,23 +9,24 @@ module Players =
     [<Literal>] 
     let size = 192
     [<Literal>]
-    let speed = 200f
+    let speed = 500f
     [<Literal>]
     let turnSpeed = 10f 
 
-    type Player = {
-        position: Vector2
-        angle: float32
-        speed: float32
-        size: Point
-        offset: Point
-        index: PlayerIndex
-        active: bool
-        color : Color
-        animations: Map<Animations.AnimationKey, Animations.Animation>
-        currentAnimation: Animations.Animation
-        rayCaster: RayCasting.RayCaster 
-    }
+    type Player = 
+        {
+            position: Vector2
+            angle: float32
+            speed: float32
+            size: Point
+            offset: Point
+            index: PlayerIndex
+            active: bool
+            color : Color
+            animations: Map<Animations.AnimationKey, Animations.Animation>
+            currentAnimation: Animations.Animation
+            rayCaster: RayCasting.RayCaster 
+        }
 
     type MovementDirection = 
         | Forward
@@ -37,11 +38,12 @@ module Players =
         | BackwardLeft
         | BackwardRight
 
-    type Input = {
-        movement: MovementDirection option
-        rotate: float32
-        act: bool
-    }
+    type Input = 
+        {
+            movement: MovementDirection option
+            rotate: float32
+            act: bool
+        }
 
     let color = function
         | PlayerIndex.One -> Color.Red
@@ -152,11 +154,14 @@ module Players =
             else 0f
         let act = ks.IsKeyDown(Keys.LeftControl)
         if player.index = PlayerIndex.One 
-            then Some { 
-                movement = movement
-                rotate = rotate
-                act = act
-            }
+            then 
+                let input = 
+                    { 
+                        movement = movement
+                        rotate = rotate
+                        act = act
+                    }
+                Some input                 
             else None
 
     let update (gametime : GameTime) map (player, input) =

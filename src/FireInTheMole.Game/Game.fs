@@ -21,6 +21,7 @@ type FireInTheMoleGame() as this =
     let mutable players = Unchecked.defaultof<Players.Player[]>
     let mutable tilemap = Unchecked.defaultof<TileMap.TileMap>
     let mutable camera = Unchecked.defaultof<OrthographicCamera>
+    let mutable scene = Unchecked.defaultof<Scenes.Scene>
 
     do
         this.Content.RootDirectory <- "Content"
@@ -44,7 +45,7 @@ type FireInTheMoleGame() as this =
             DepthFormat.Depth24Stencil8);
         let adapter = new BoxingViewportAdapter(this.Window, this.GraphicsDevice, renderWidth, renderHeight)
         camera <- new OrthographicCamera(adapter)
-        camera.Zoom <- scale
+        camera.Zoom <- scale / 2f
 
     let loadTextures() = 
         // A single pixel is useful for drawing lots of primitives
@@ -70,6 +71,10 @@ type FireInTheMoleGame() as this =
     let loadTilemap() =
         tilemap <- TileMap.create this.Content "maps/grass/pillars"
 
+    let loadPauseMenu() =        
+        scene <- Scenes.createPauseMenuScene()
+        Scenes.load scene
+
     member this.Graphics = graphics
 
     override this.Initialize() =
@@ -77,28 +82,29 @@ type FireInTheMoleGame() as this =
         base.Initialize()
     
     override this.LoadContent() =
-        sb <- new SpriteBatch(this.GraphicsDevice)        
+        sb <- new SpriteBatch(this.GraphicsDevice)    
+        scene <- Scenes.createGameScene()
         loadTextures()
         loadTilemap()
         loadPlayers()
         base.LoadContent()
 
-    override this.Update(gametime) = 
+    override this.Update(gametime) =
+        scene <- Scenes.update gametime scene
+        match Keyboard.GetState() with
+        | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
+        | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
+        | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
+        | _ -> ()
         tilemap <- TileMap.update gametime tilemap
         players <- players 
             |> Seq.map (fun p -> p, Players.getInput p)
             |> Seq.map (Players.update gametime tilemap)
             |> Array.ofSeq
         camera.LookAt(players.[0].position)
-        match Keyboard.GetState() with
-        | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
-        | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
-        | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
-        | KeyDown Keys.Escape -> this.Exit()
-        | _ -> ()
         base.Update(gametime)
 
-    override this.Draw(gametime) =        
+    override this.Draw(gametime) =     
         // First, we are drawing everything to the render target 
         this.GraphicsDevice.SetRenderTarget rt
         this.GraphicsDevice.Clear bg
@@ -120,4 +126,7 @@ type FireInTheMoleGame() as this =
             RasterizerState.CullCounterClockwise)
         sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
         sb.End()
+
+        Scenes.draw this.GraphicsDevice scene
+
         base.Draw(gametime)

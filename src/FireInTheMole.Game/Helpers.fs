@@ -15,6 +15,14 @@ module Helpers =
     let (|KeyDown|_|) key (ks : KeyboardState) = 
         if ks.IsKeyDown(key) then Some() else None
 
+    let (|KeyUp|_|) key (ks : KeyboardState) = 
+        if ks.IsKeyUp(key) then Some() else None
+
+    let (|KeyPressed|_|) key (previousKs, currentKs) = 
+        match previousKs, currentKs with
+        | KeyDown key, KeyUp key -> Some()
+        | _ -> None
+
     let normAngle angle = 
         let angle = angle % 360f
         if angle < 0f then angle + 360f else angle

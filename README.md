@@ -5,8 +5,8 @@ A game about moles mining with dynamite and blowing each other up (a Bomberstein
  - [x] Change the animation based on the movement and direction of the player.
  - [x] Load a Tiled map.
  - [ ] Load player spawn points from the Tile Map.
- - [ ] When rendering top-down, use an orthographic camera that follows the player.
- - [ ] Bug: prototype janky collision detection... allow player to move flush up against the wall.
+ - [x] When rendering top-down, use an orthographic camera that follows the player.
+ - [x] Bug: prototype janky collision detection... allow player to move flush up against the wall.
  - [x] Render mole instead of circle for player.
 
 ## But why F#?

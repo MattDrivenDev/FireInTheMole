@@ -1,4 +1,5 @@
 ﻿namespace FireInTheMole.Game
+
 open System
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
@@ -6,6 +7,9 @@ open Microsoft.Xna.Framework.Input
 open MonoGame.Extended
 open MonoGame.Extended.ViewportAdapters
 
+
+module Engine = 
+    ()
 
 type FireInTheMoleGame() as this = 
     inherit Game()
@@ -18,10 +22,8 @@ type FireInTheMoleGame() as this =
     let mutable pixel = Unchecked.defaultof<Texture2D>
     let mutable circle = Unchecked.defaultof<Texture2D>
     let mutable yellow = Unchecked.defaultof<Texture2D>
-    let mutable players = Unchecked.defaultof<Players.Player[]>
-    let mutable tilemap = Unchecked.defaultof<TileMap.TileMap>
     let mutable camera = Unchecked.defaultof<OrthographicCamera>
-    let mutable scene = Unchecked.defaultof<Scenes.Scene>
+    let mutable gameState = Unchecked.defaultof<GameStates.GameState>
 
     do
         this.Content.RootDirectory <- "Content"
@@ -63,19 +65,15 @@ type FireInTheMoleGame() as this =
         // Yellow mole spritesheet
         yellow <- this.Content.Load<Texture2D>("mole/yellow")
 
-    let loadPlayers() =
+    let loadPlayers (tilemap : TileMap.TileMap) =
         let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height) |> int
         let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength true
-        players <- [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
+        [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
 
     let loadTilemap() =
-        tilemap <- TileMap.create this.Content "maps/grass/pillars"
+        TileMap.create this.Content "maps/grass/pillars"
 
     let loadFonts() = Fonts.loadFonts this.Content
-    
-    let loadPauseMenu() =        
-        scene <- Scenes.createPauseMenuScene()
-        Scenes.load scene
 
     member this.Graphics = graphics
 
@@ -85,37 +83,33 @@ type FireInTheMoleGame() as this =
     
     override this.LoadContent() =
         sb <- new SpriteBatch(this.GraphicsDevice)    
+        let ks = Keyboard.GetState();
         loadTextures()
-        loadTilemap()
-        loadPlayers()
+        let tileMap = loadTilemap()
+        let players = loadPlayers tileMap
         loadFonts()
-        scene <- Scenes.createGameScene()
+        gameState <- GameStates.createGameState ks players tileMap
         base.LoadContent()
 
     override this.Update(gametime) =
-        scene <- Scenes.update gametime scene
-        if scene = Scenes.Quit then this.Exit()
+        gameState <- GameStates.update gametime gameState camera
+        if gameState = GameStates.Quit then this.Exit()        
         match Keyboard.GetState() with
         | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
         | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
         | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
-        | _ -> ()
-        tilemap <- TileMap.update gametime tilemap
-        players <- players 
-            |> Seq.map (fun p -> p, Players.getInput p)
-            |> Seq.map (Players.update gametime tilemap)
-            |> Array.ofSeq
-        camera.LookAt(players.[0].position)
+        | _ -> ()        
         base.Update(gametime)
 
-    override this.Draw(gametime) =     
+    override this.Draw(gametime) =  
         // First, we are drawing everything to the render target 
         this.GraphicsDevice.SetRenderTarget rt
         this.GraphicsDevice.Clear bg
         let transform = camera.GetViewMatrix()
         sb.Begin(transformMatrix=transform)
-        TileMap.draw sb tilemap 
-        Seq.iter (Players.draw sb pixel) players
+        //TileMap.draw sb tilemap 
+        //Seq.iter (Players.draw sb pixel) players
+        GameStates.draw sb pixel gameState
         sb.End()
         this.GraphicsDevice.SetRenderTarget null
         // Then we draw the render target to the screen
@@ -129,6 +123,6 @@ type FireInTheMoleGame() as this =
             DepthStencilState.None,
             RasterizerState.CullCounterClockwise)
         sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
-        Scenes.draw sb pixel scene
+        //Scenes.draw sb pixel scene
         sb.End()
         base.Draw(gametime)

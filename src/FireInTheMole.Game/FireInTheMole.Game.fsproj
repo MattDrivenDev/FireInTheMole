@@ -14,8 +14,8 @@
     <Compile Include="TileMap.fs" />
     <Compile Include="RayCasting.fs" />
     <Compile Include="Players.fs" />
-    <Compile Include="Scenes.fs" />
-    <Compile Include="Game.fs" />
+    <Compile Include="GameStates.fs" />
+    <Compile Include="Engine.fs" />
   </ItemGroup>
 
   <ItemGroup>

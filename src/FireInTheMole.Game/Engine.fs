@@ -101,28 +101,28 @@ type FireInTheMoleGame() as this =
         | _ -> ()        
         base.Update(gametime)
 
-    override this.Draw(gametime) =  
-        // First, we are drawing everything to the render target 
-        this.GraphicsDevice.SetRenderTarget rt
-        this.GraphicsDevice.Clear bg
-        let transform = camera.GetViewMatrix()
-        sb.Begin(transformMatrix=transform)
-        //TileMap.draw sb tilemap 
-        //Seq.iter (Players.draw sb pixel) players
-        GameStates.drawToRenderTarget sb pixel gameState
-        sb.End()
-        this.GraphicsDevice.SetRenderTarget null
-        // Then we draw the render target to the screen
-        let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
-        let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
-        let rect = Nullable<Rectangle>()
-        sb.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullCounterClockwise)
-        sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
-        GameStates.drawToScreen sb pixel gameState
-        sb.End()
-        base.Draw(gametime)
+    override this.Draw(gameTime) = 
+        let drawViaRenderTarget drawf =
+            this.GraphicsDevice.SetRenderTarget rt
+            let transform = camera.GetViewMatrix()
+            sb.Begin(transformMatrix=transform)
+            drawf sb
+            sb.End()
+            this.GraphicsDevice.SetRenderTarget null
+            let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
+            let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
+            let rect = Nullable<Rectangle>()
+            sb.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullCounterClockwise)
+            sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
+            sb.End()
+        let drawToScreen drawf = 
+            sb.Begin()
+            drawf sb
+            sb.End()
+        GameStates.draw drawViaRenderTarget drawToScreen pixel gameState
+        base.Draw(gameTime)

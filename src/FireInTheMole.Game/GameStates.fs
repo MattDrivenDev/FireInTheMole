@@ -103,7 +103,7 @@ module GameStates =
         | Game data -> updateGame gameTime data camera
         | Quit -> gameState
 
-    let drawPauseMenu (sb : SpriteBatch) pixel (menu : MenuData) = 
+    let drawPauseMenu pixel (menu : MenuData) (sb : SpriteBatch) = 
         let background = Rectangle(0, 0, sb.GraphicsDevice.Viewport.Width, sb.GraphicsDevice.Viewport.Height)
         let titleHeight = menu.titleFont.MeasureString("title").Y
         let itemHeight = menu.itemFont.MeasureString("item").Y
@@ -115,20 +115,12 @@ module GameStates =
             sb.DrawString(menu.itemFont, item, position, color)
         Seq.iteri drawItem menu.items
 
-    let drawGame (sb : SpriteBatch) pixel (game : GameStateData) =
+    let drawGame pixel (game : GameStateData) (sb : SpriteBatch)  =
         TileMap.draw sb game.tileMap 
         Seq.iter (Players.draw sb pixel) game.players
 
-    /// Don't like this
-    let drawToRenderTarget sb pixel = function
-        | Game game -> drawGame sb pixel game
-        | Splash -> ()
-        | Paused _ -> ()
-        | Quit -> ()
-
-    /// Don't like this either
-    let drawToScreen sb pixel = function
-        | Paused (game, menu) -> drawPauseMenu sb pixel menu
-        | Splash -> ()
-        | Game _ -> ()
-        | Quit -> ()
+    let draw drawToRenderTarget drawToScreen pixel gameState = 
+        match gameState with
+        | Game game -> drawToRenderTarget(drawGame pixel game)
+        | Paused (_, menu) -> drawToScreen(drawPauseMenu pixel menu)
+        | _ -> debug (sprintf "No draw call for %A" gameState)

@@ -109,7 +109,7 @@ type FireInTheMoleGame() as this =
         sb.Begin(transformMatrix=transform)
         //TileMap.draw sb tilemap 
         //Seq.iter (Players.draw sb pixel) players
-        GameStates.draw sb pixel gameState
+        GameStates.drawToRenderTarget sb pixel gameState
         sb.End()
         this.GraphicsDevice.SetRenderTarget null
         // Then we draw the render target to the screen
@@ -123,6 +123,6 @@ type FireInTheMoleGame() as this =
             DepthStencilState.None,
             RasterizerState.CullCounterClockwise)
         sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
-        //Scenes.draw sb pixel scene
+        GameStates.drawToScreen sb pixel gameState
         sb.End()
         base.Draw(gametime)

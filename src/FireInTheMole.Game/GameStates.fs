@@ -119,9 +119,16 @@ module GameStates =
         TileMap.draw sb game.tileMap 
         Seq.iter (Players.draw sb pixel) game.players
 
-    /// I don't like the pixel but it is useful to get something on the screen
-    let draw sb pixel = function
-        | Splash -> ()
-        | Paused (game, menu) -> drawPauseMenu sb pixel menu
+    /// Don't like this
+    let drawToRenderTarget sb pixel = function
         | Game game -> drawGame sb pixel game
+        | Splash -> ()
+        | Paused _ -> ()
+        | Quit -> ()
+
+    /// Don't like this either
+    let drawToScreen sb pixel = function
+        | Paused (game, menu) -> drawPauseMenu sb pixel menu
+        | Splash -> ()
+        | Game _ -> ()
         | Quit -> ()

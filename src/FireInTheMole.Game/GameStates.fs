@@ -52,22 +52,18 @@ module GameStates =
             }
         Game game
 
-    let load scene = function
-        | Splash -> ()
-        | Paused (game, menu) -> ()
-        | Game data -> ()
-        | Quit -> ()
-
     let updatePauseMenu (game : GameStateData) menu =
         let currentKs = Keyboard.GetState()
         let updatedGame = { game with previousInput = currentKs }
         match (menu.previousInput, currentKs) with
         | KeyPressed Keys.Escape -> Game updatedGame
         | KeyPressed Keys.Up -> 
+            Sounds.click 2
             let currentSelection = menu.currentSelection - 1
             let currentSelection = if currentSelection < 0 then menu.items.Length - 1 else currentSelection
             Paused(updatedGame, { menu with previousInput = currentKs; currentSelection = currentSelection })
         | KeyPressed Keys.Down -> 
+            Sounds.click 1
             let currentSelection = menu.currentSelection + 1
             let currentSelection = if currentSelection >= menu.items.Length then 0 else currentSelection
             Paused(updatedGame, { menu with previousInput = currentKs; currentSelection = currentSelection })
@@ -80,9 +76,7 @@ module GameStates =
 
     let updateGame gameTime (game : GameStateData) (camera : OrthographicCamera) =
         let currentKs = Keyboard.GetState()
-        match (game.previousInput, currentKs) with
-        | KeyPressed Keys.Escape -> createPauseMenuState game
-        | _ ->
+        let innerUpdate() =
             camera.LookAt(game.players.[0].position)
             let updatedGame = 
                 { game with 
@@ -95,6 +89,9 @@ module GameStates =
                         |> Array.ofSeq
                 }
             Game updatedGame
+        match (game.previousInput, currentKs) with
+        | KeyPressed Keys.Escape -> createPauseMenuState game
+        | _ -> innerUpdate()
 
     let update gameTime gameState camera = 
         match gameState with
@@ -119,8 +116,8 @@ module GameStates =
         TileMap.draw sb game.tileMap 
         Seq.iter (Players.draw sb pixel) game.players
 
-    let draw drawToRenderTarget drawToScreen pixel gameState = 
+    let draw drawWithCamera drawWithoutCamera pixel gameState = 
         match gameState with
-        | Game game -> drawToRenderTarget(drawGame pixel game)
-        | Paused (_, menu) -> drawToScreen(drawPauseMenu pixel menu)
+        | Game game -> drawWithCamera(drawGame pixel game)
+        | Paused (_, menu) -> drawWithoutCamera(drawPauseMenu pixel menu)
         | _ -> debug (sprintf "No draw call for %A" gameState)

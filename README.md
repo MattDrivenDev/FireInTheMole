@@ -2,12 +2,14 @@
 A game about moles mining with dynamite and blowing each other up (a Bomberstein3D).
 
 ## TODO
+ - [ ] Add a title screen.
+ - [ ] Add a "Days Since Last Accident" counter to the title screen :)
  - [ ] Load player spawn points from the Tile Map.
  - [ ] Make the pause menu prettier.
  - [ ] Pause menu sounds.
  - [ ] Pause menu quit confirmation. 
- - [ ] Refactor/2nd pass on the screen/scene/state managment.
  - [ ] Projection rendering based on the results of the ray casting.
+ - [x] Refactor/2nd pass on the screen/scene/state managment.
  - [x] Add a pause menu.
  - [x] Screen/scene/state managment. 
  - [x] Change the animation based on the movement and direction of the player.

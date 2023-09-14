@@ -27,12 +27,11 @@ type FireInTheMoleGame() as this =
 
     do
         this.Content.RootDirectory <- "Content"
-        this.IsMouseVisible <- true
         graphics.GraphicsProfile <- GraphicsProfile.HiDef
         graphics.IsFullScreen <- false
 
     let initializeGraphics() =
-        scale <- MathHelper.Clamp(scale, 1f, 4f)
+        scale <- MathHelper.Clamp(scale, 1f, 2f)
         let renderWidth = 640 * int scale
         let renderHeight = 360 * int scale
         graphics.PreferredBackBufferWidth <- renderWidth
@@ -75,6 +74,8 @@ type FireInTheMoleGame() as this =
 
     let loadFonts() = Fonts.loadFonts this.Content
 
+    let loadSounds() = Sounds.loadSounds this.Content
+
     member this.Graphics = graphics
 
     override this.Initialize() =
@@ -88,6 +89,7 @@ type FireInTheMoleGame() as this =
         let tileMap = loadTilemap()
         let players = loadPlayers tileMap
         loadFonts()
+        loadSounds()
         gameState <- GameStates.createGameState ks players tileMap
         base.LoadContent()
 
@@ -102,27 +104,35 @@ type FireInTheMoleGame() as this =
         base.Update(gametime)
 
     override this.Draw(gameTime) = 
-        let drawViaRenderTarget drawf =
-            this.GraphicsDevice.SetRenderTarget rt
+        // First, clear the screen to the background color
+        this.GraphicsDevice.Clear(bg)
+        // Setup a functions to draw with and without the camera
+        let drawWithCamera drawf =
             let transform = camera.GetViewMatrix()
             sb.Begin(transformMatrix=transform)
             drawf sb
-            sb.End()
-            this.GraphicsDevice.SetRenderTarget null
-            let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
-            let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
-            let rect = Nullable<Rectangle>()
-            sb.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullCounterClockwise)
-            sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
-            sb.End()
-        let drawToScreen drawf = 
+            sb.End()      
+        let drawWithoutCamera drawf = 
             sb.Begin()
             drawf sb
             sb.End()
-        GameStates.draw drawViaRenderTarget drawToScreen pixel gameState
+        // Set the render target used for resolution scaling
+        this.GraphicsDevice.SetRenderTarget rt
+        // Draw the game state to the render target using the camera/no-camera functions
+        GameStates.draw drawWithCamera drawWithoutCamera pixel gameState
+        // Set the render target back to the screen
+        this.GraphicsDevice.SetRenderTarget null              
+        // Draw the render target to the screen with the correct scale
+        let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
+        let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
+        let rect = Nullable<Rectangle>()
+        sb.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullCounterClockwise)
+        sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
+        sb.End()
+        // Done.
         base.Draw(gameTime)

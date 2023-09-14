@@ -77,3 +77,33 @@
 /processorParam:TextureFormat=Color
 /build:Mole/yellow.png
 
+#begin Sounds/UI/click1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/click1.wav
+
+#begin Sounds/UI/click2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/click2.wav
+
+#begin Sounds/UI/click3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/click3.wav
+
+#begin Sounds/UI/click4.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/click4.wav
+
+#begin Sounds/UI/click5.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/click5.wav
+

@@ -21,6 +21,13 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/text.spritefont
 
+#begin Fonts/title.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/title.spritefont
+
 #begin Maps/Grass/Pillars.tmx
 /importer:TiledMapImporter
 /processor:TiledMapProcessor

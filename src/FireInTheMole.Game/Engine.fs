@@ -108,31 +108,37 @@ type FireInTheMoleGame() as this =
         this.GraphicsDevice.Clear(bg)
         // Setup a functions to draw with and without the camera
         let drawWithCamera drawf =
+            // Set the render target used for resolution scaling
+            this.GraphicsDevice.SetRenderTarget rt
             let transform = camera.GetViewMatrix()
             sb.Begin(transformMatrix=transform)
             drawf sb
             sb.End()      
+            // Set the render target back to the screen
+            this.GraphicsDevice.SetRenderTarget null    
+            // Draw the render target to the screen with the correct scale
+            let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
+            let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
+            let rect = Nullable<Rectangle>()
+            sb.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullCounterClockwise)
+            sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
+            sb.End()
         let drawWithoutCamera drawf = 
-            sb.Begin()
+            sb.Begin(SpriteSortMode.Deferred,
+                     BlendState.AlphaBlend,
+                     SamplerState.PointClamp,
+                     DepthStencilState.None,
+                     RasterizerState.CullCounterClockwise)
             drawf sb
             sb.End()
-        // Set the render target used for resolution scaling
-        this.GraphicsDevice.SetRenderTarget rt
+
         // Draw the game state to the render target using the camera/no-camera functions
-        GameStates.draw drawWithCamera drawWithoutCamera pixel gameState
-        // Set the render target back to the screen
-        this.GraphicsDevice.SetRenderTarget null              
-        // Draw the render target to the screen with the correct scale
-        let position = Vector2(float32 this.GraphicsDevice.Viewport.Width, float32 this.GraphicsDevice.Viewport.Height) / 2f
-        let origin = Vector2(float32 rt.Width, float32 rt.Height) / 2f
-        let rect = Nullable<Rectangle>()
-        sb.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullCounterClockwise)
-        sb.Draw(rt, position, rect, Color.White, 0f, origin, scale, SpriteEffects.None, 1f)
-        sb.End()
+        GameStates.draw drawWithCamera drawWithoutCamera pixel gameState        
+        
         // Done.
         base.Draw(gameTime)

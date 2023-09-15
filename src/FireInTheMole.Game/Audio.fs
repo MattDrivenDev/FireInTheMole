@@ -5,9 +5,9 @@ open Microsoft.Xna.Framework.Content
 
 module Sounds =
     
-    let mutable clicks = Unchecked.defaultof<SoundEffect array>
+    let mutable private clicks = Unchecked.defaultof<SoundEffect array>
 
-    let loadSound (content : ContentManager) name = 
+    let private loadSound (content : ContentManager) name = 
         content.Load<SoundEffect>(sprintf "Sounds/%s" name)
 
     let loadSounds (content : ContentManager) =

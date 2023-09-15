@@ -7,7 +7,7 @@ open MonoGame.Extended
 
 
 module GameStates = 
-    
+   
     type GameStateData = 
         {
             previousInput: KeyboardState
@@ -34,11 +34,11 @@ module GameStates =
     let createPauseMenuState game =
         let menu = 
             { 
-                title = "Fire In The Mole!"
+                title = GAME_TITLE
                 titleFont = Fonts.title
                 previousInput = Keyboard.GetState()
                 currentSelection = 0
-                items = [| "Resume"; "Quit" |]
+                items = [| RESUME_GAME; QUIT_GAME |]
                 itemFont = Fonts.menu
             }
         Paused(game, menu)
@@ -58,11 +58,13 @@ module GameStates =
         match (menu.previousInput, currentKs) with
         | KeyPressed Keys.Escape -> Game updatedGame
         | KeyPressed Keys.Up -> 
+            if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
             Sounds.click 2
             let currentSelection = menu.currentSelection - 1
             let currentSelection = if currentSelection < 0 then menu.items.Length - 1 else currentSelection
             Paused(updatedGame, { menu with previousInput = currentKs; currentSelection = currentSelection })
         | KeyPressed Keys.Down -> 
+            if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
             Sounds.click 1
             let currentSelection = menu.currentSelection + 1
             let currentSelection = if currentSelection >= menu.items.Length then 0 else currentSelection
@@ -70,8 +72,14 @@ module GameStates =
         | KeyPressed Keys.Enter ->
             match menu.currentSelection with
             | 0 -> Game updatedGame
-            | 1 -> Quit
-            | _ -> failwith "Menu Item Error"
+            | 1 -> 
+                Sounds.randomClick()
+                if menu.items.[1] = QUIT_GAME then
+                    menu.items.[1] <- QUIT_GAME_CONFIRMATION
+                    Paused (updatedGame, { menu with previousInput = currentKs })
+                else
+                    Quit
+            | _ -> failwith PAUSE_MENU_UPDATE_ERROR
         | _ -> Paused(updatedGame, { menu with previousInput = currentKs })
 
     let updateGame gameTime (game : GameStateData) (camera : OrthographicCamera) =
@@ -90,7 +98,9 @@ module GameStates =
                 }
             Game updatedGame
         match (game.previousInput, currentKs) with
-        | KeyPressed Keys.Escape -> createPauseMenuState game
+        | KeyPressed Keys.Escape ->             
+            Sounds.randomClick()
+            createPauseMenuState game
         | _ -> innerUpdate()
 
     let update gameTime gameState camera = 
@@ -120,4 +130,4 @@ module GameStates =
         match gameState with
         | Game game -> drawWithCamera(drawGame pixel game)
         | Paused (_, menu) -> drawWithoutCamera(drawPauseMenu pixel menu)
-        | _ -> debug (sprintf "No draw call for %A" gameState)
+        | _ -> failwith GAMESTATES_DRAW_ERROR

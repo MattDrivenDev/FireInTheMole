@@ -15,6 +15,7 @@
     <Compile Include="TileMap.fs" />
     <Compile Include="RayCasting.fs" />
     <Compile Include="Players.fs" />
+    <Compile Include="MagicStrings.fs" />
     <Compile Include="GameStates.fs" />
     <Compile Include="Engine.fs" />
   </ItemGroup>

@@ -12,5 +12,5 @@ module Fonts =
         content.Load<SpriteFont>(sprintf "Fonts/%s" name)
     
     let loadFonts (content : ContentManager) = 
-        title <- loadFont content "text"
+        title <- loadFont content "title"
         menu <- loadFont content "text"

@@ -20,3 +20,18 @@ module MagicStrings =
 
     [<Literal>]
     let GAMESTATES_DRAW_ERROR = "GameStates.draw: Not implemented"
+
+    [<Literal>]
+    let WALLS_LAYER_NAME = "Walls"
+
+    [<Literal>]
+    let DIRT_LAYER_NAME = "Dirt"
+
+    [<Literal>]
+    let SPAWN_LAYER_NAME = "Spawn"
+    
+    [<Literal>]
+    let TILEDMAP_LOADMAP_NOSPAWNLAYER_ERROR = "No spawn layer!"
+    
+    [<Literal>]
+    let TILEDMAP_MAPSPAWNOBJECTSLAYER_ERROR = "Error in mapSpawnObjectsLayer - spawn layer should have no more/less than 4 spawn points named 1 through 4"

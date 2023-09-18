@@ -108,3 +108,11 @@ module Helpers =
         if abs v.X > abs v.Y 
             then Vector2(float32 (sign v.X), 0f)
             else Vector2(0f, float32 (sign v.Y))
+
+    let playerIndexToArrayIndex (index : PlayerIndex) = 
+        match index with
+        | PlayerIndex.One -> 0
+        | PlayerIndex.Two -> 1
+        | PlayerIndex.Three -> 2
+        | PlayerIndex.Four -> 3
+        | _ -> failwith "Invalid player index"

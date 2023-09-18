@@ -67,7 +67,12 @@ type FireInTheMoleGame() as this =
     let loadPlayers (tilemap : TileMap.TileMap) =
         let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height) |> int
         let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength true
-        [| Players.create options tilemap yellow PlayerIndex.One true (Vector2(100f, 100f)) |]
+        [| 
+            Players.create options tilemap yellow PlayerIndex.One true 
+            Players.create options tilemap yellow PlayerIndex.Two true 
+            Players.create options tilemap yellow PlayerIndex.Three true 
+            Players.create options tilemap yellow PlayerIndex.Four true 
+        |]
 
     let loadTilemap() =
         TileMap.create this.Content "maps/grass/pillars"

@@ -10,20 +10,22 @@ module TileMap =
     // The use of the 'and' keyword is just some syntactic sugar
     // to let me define the types in a top-down fashion.
 
-    type Tileset = {
-        name: string
-        texture: Texture2D
-        tiles: Map<int, TilesetTile>
-        firstTileId: int
-        tileWidth: int
-        tileHeight: int
-        tileCount: int
-        columns: int
-        rows: int
-    }
-    and TilesetTile = {
-        id: int
-    }
+    type Tileset = 
+        {
+            name: string
+            texture: Texture2D
+            tiles: Map<int, TilesetTile>
+            firstTileId: int
+            tileWidth: int
+            tileHeight: int
+            tileCount: int
+            columns: int
+            rows: int
+        }
+    and TilesetTile = 
+        {
+            id: int
+        }
     
     [<Struct>]
     type TileCoords = 
@@ -32,29 +34,34 @@ module TileMap =
             y: int
         }
 
-    type TileMap = {
-        name: string
-        layers: TileMapLayer array
-        tilesets: Map<string, Tileset>
-        tileWidth: int
-        tileHeight: int
-        width: int
-        height: int
-        widthInPixels: int
-        heightInPixels: int
-    }
-    and TileMapLayer = {
-        name: string
-        tiles: Map<TileCoords, Tile>
-    }
-    and Tile = {
-        key: TileCoords
-        tilesetTileId: int
-        texture: Texture2D
-        textureSource: Rectangle
-        //bounds: Collision.BoundingRectangle option
-        active: bool
-    }
+    type TileMap = 
+        {
+            name: string
+            layers: TileMapLayer array
+            tilesets: Map<string, Tileset>
+            tileWidth: int
+            tileHeight: int
+            width: int
+            height: int
+            widthInPixels: int
+            heightInPixels: int
+            spawnPoints: TileCoords array
+        }
+    and TileMapLayer = 
+        {
+            name: string
+            tiles: Map<TileCoords, Tile>
+        }
+    and Tile = 
+        {
+            key: TileCoords
+            tilesetTileId: int
+            texture: Texture2D
+            textureSource: Rectangle
+            active: bool
+        }
+
+    let coords x y = { x = x; y = y }
 
     // --------------------------------------------------------------------
     /// To avoid a leaky abstraction, we'll lock away the integration
@@ -80,8 +87,7 @@ module TileMap =
                   texture = texture 
                   textureSource = source
                   active = true }
-            if tiledTile.IsBlank then None else Some (innerMapTile tiledTile)                
-                
+            if tiledTile.IsBlank then None else Some (innerMapTile tiledTile)        
 
         let mapLayer tmx (tiledLayer : TiledMapTileLayer) =
             let tiles = 
@@ -91,6 +97,19 @@ module TileMap =
                 |> Map.ofSeq            
             { name = tiledLayer.Name
               tiles = tiles }
+
+        let mapSpawnObjectsLayer (tmx : TiledMap) (objectLayer : TiledMapObjectLayer) : TileCoords array = 
+            let findCoords (position : Vector2) = 
+                let wrap max n = 
+                    if n < 0 then n + max
+                    elif n >= max then n - max
+                    else n
+                let x = int position.X / tmx.TileWidth
+                let y = int position.Y / tmx.TileHeight
+                coords (wrap tmx.Width x) (wrap tmx.Height y)
+            match objectLayer.Objects with
+            | [| p1; p2; p3; p4 |] -> objectLayer.Objects |> Array.map (fun p -> findCoords p.Position)
+            | _ -> failwith TILEDMAP_MAPSPAWNOBJECTSLAYER_ERROR
 
         let mapTilesetTile (tile : TiledMapTilesetTile) = 
             { id = tile.LocalTileIdentifier }
@@ -114,6 +133,9 @@ module TileMap =
         let tiledMapTileLayer (layer : TiledMapLayer) =
             if layer :? TiledMapTileLayer then Some (layer :?> TiledMapTileLayer) else None
 
+        let tiledMapObjectLayer (layer: TiledMapLayer) = 
+          if layer :? TiledMapObjectLayer then Some (layer :?> TiledMapObjectLayer) else None
+
         let loadMap (cm : ContentManager) map = 
             let tmx = cm.Load<TiledMap>(map)
             // Maintain the order of the layers
@@ -122,20 +144,32 @@ module TileMap =
                 |> Seq.choose tiledMapTileLayer
                 |> Seq.map (mapLayer tmx)
                 |> Array.ofSeq
+            let spawnPoints : TileCoords array = 
+                let spawnLayers = 
+                    tmx.Layers 
+                    |> Seq.choose tiledMapObjectLayer
+                    |> Seq.filter (fun l -> l.Name = SPAWN_LAYER_NAME)
+                    |> Array.ofSeq
+                match spawnLayers with
+                | [||] -> failwith TILEDMAP_LOADMAP_NOSPAWNLAYER_ERROR
+                | xs -> Array.collect (mapSpawnObjectsLayer tmx) xs
             let tilesets = 
                 tmx.Tilesets
                 |> Seq.map mapTileset
                 |> Seq.map (fun t -> t.name, t)
                 |> Map.ofSeq            
-            { name = tmx.Name
-              tilesets = tilesets
-              layers = layers
-              tileWidth = tmx.TileWidth
-              tileHeight = tmx.TileHeight
-              width = tmx.Width
-              height = tmx.Height
-              widthInPixels = tmx.WidthInPixels
-              heightInPixels = tmx.HeightInPixels }        
+            { 
+                name = tmx.Name
+                tilesets = tilesets
+                layers = layers
+                tileWidth = tmx.TileWidth
+                tileHeight = tmx.TileHeight
+                width = tmx.Width
+                height = tmx.Height
+                widthInPixels = tmx.WidthInPixels
+                heightInPixels = tmx.HeightInPixels 
+                spawnPoints = spawnPoints
+            }        
     // --------------------------------------------------------------------
 
     let create (cm : ContentManager) map = 
@@ -193,8 +227,6 @@ module TileMap =
 
     let update (gt : GameTime) (tilemap : TileMap) = tilemap
 
-    let coords x y = { x = x; y = y }
-
     let toTileCoords (tilemap : TileMap) (position : Vector2) = 
         let wrap n = 
             if n < 0 then n + tilemap.width
@@ -204,11 +236,16 @@ module TileMap =
         let y = int position.Y / tilemap.tileHeight
         coords (wrap x) (wrap y)
 
+    let fromTileCoords (tilemap : TileMap) (coords : TileCoords) = 
+        let x = coords.x * tilemap.tileWidth + tilemap.tileWidth / 2
+        let y = coords.y * tilemap.tileHeight + tilemap.tileHeight / 2
+        Vector2(float32 x, float32 y)
+
     /// Returns the tile at a given position if it exists and is collidable, else None.
     let getCollidableTile (tilemap : TileMap) (coords : TileCoords) : Tile option = 
         // There are two collidable layers - Walls and Dirt
-        let wallLayer = getLayer tilemap "Walls"
-        let dirtLayer = getLayer tilemap "Dirt"
+        let wallLayer = getLayer tilemap WALLS_LAYER_NAME
+        let dirtLayer = getLayer tilemap DIRT_LAYER_NAME
         match wallLayer, dirtLayer with
         | None, None -> None
         | Some walls, None -> getTile walls coords

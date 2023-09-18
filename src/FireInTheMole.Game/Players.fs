@@ -101,10 +101,12 @@ module Players =
         elif angle >= 292.5f && angle < 337.5f then Animations.MoveAnimation Animations.AnimationAngle.UpRight
         else failwith "Invalid angle"
 
-    let create options map tx idx active p = 
+    let create options (map : TileMap.TileMap) tx (idx : PlayerIndex) active = 
+        let n = playerIndexToArrayIndex idx
+        let spawn = TileMap.fromTileCoords map map.spawnPoints.[n]
         let animations = loadAnimations tx
         {
-            position = p
+            position = spawn
             angle = 0f
             speed = speed
             size = Point(size, size)
@@ -114,7 +116,7 @@ module Players =
             color = color idx
             animations = animations
             currentAnimation = animations.[Animations.MoveAnimation Animations.AnimationAngle.Right]
-            rayCaster = RayCasting.create options map p 0f
+            rayCaster = RayCasting.create options map spawn 0f
         }
 
     let draw sb pixel player  =

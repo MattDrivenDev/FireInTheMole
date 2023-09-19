@@ -2,10 +2,11 @@
 A game about moles mining with dynamite and blowing each other up (a Bomberstein3D).
 
 ## TODO
- - [ ] Projection rendering based on the results of the ray casting.
+ - [ ] Projection and RayCasting options should be loaded from a config etc.
  - [ ] Add a title screen.
  - [ ] Add a "Days Since Last Accident" counter to the title screen :)
  - [ ] Make the pause menu prettier.
+ - [x] Projection rendering based on the results of the ray casting.
  - [x] Load player spawn points from the Tile Map.
  - [x] Pause menu sounds.
  - [x] Pause menu quit confirmation. 

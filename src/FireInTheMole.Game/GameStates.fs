@@ -4,6 +4,7 @@ open Microsoft.Xna.Framework.Input
 open Microsoft.Xna.Framework.Graphics
 open Microsoft.Xna.Framework
 open MonoGame.Extended
+open System
 
 
 module GameStates = 
@@ -30,6 +31,17 @@ module GameStates =
         | Paused of GameStateData * MenuData
         | Game of GameStateData
         | Quit
+
+    let options : Projection.ProjectionOptions = 
+        {
+            tileWidth = 256
+            screenDistance = int (320f / MathF.Tan(MathHelper.ToRadians(45f)))
+            screenHeight = 360
+            screenHalfHeight = 180
+            screenWidth = 640
+            screenHalfWidth = 320
+            textureMappingWidth = 640 / RayCasting.MaxRayCount
+        }
 
     let createPauseMenuState game =
         let menu = 
@@ -123,11 +135,14 @@ module GameStates =
         Seq.iteri drawItem menu.items
 
     let drawGame pixel (game : GameStateData) (sb : SpriteBatch)  =
-        TileMap.draw sb game.tileMap 
-        Seq.iter (Players.draw sb pixel) game.players
+        //TileMap.draw sb game.tileMap 
+        //Seq.iter (Players.draw sb pixel) game.players
+        let player1 = game.players.[0]
+        Projection.project options player1
+        |> Seq.iter (Projection.draw sb)
 
     let draw drawWithCamera drawWithoutCamera pixel gameState = 
         match gameState with
-        | Game game -> drawWithCamera(drawGame pixel game)
+        | Game game -> drawWithoutCamera(drawGame pixel game)
         | Paused (_, menu) -> drawWithoutCamera(drawPauseMenu pixel menu)
         | _ -> failwith GAMESTATES_DRAW_ERROR

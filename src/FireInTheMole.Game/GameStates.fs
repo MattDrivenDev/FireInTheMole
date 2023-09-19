@@ -16,19 +16,9 @@ module GameStates =
             tileMap: TileMap.TileMap
         }
 
-    type MenuData = 
-        {
-            title: string
-            titleFont: SpriteFont
-            previousInput: KeyboardState
-            currentSelection: int
-            items: string array
-            itemFont: SpriteFont
-        }
-
     type GameState = 
         | Splash
-        | Paused of GameStateData * MenuData
+        | Paused of GameStateData * UI.MenuData
         | Game of GameStateData
         | Quit
 
@@ -44,16 +34,7 @@ module GameStates =
         }
 
     let createPauseMenuState game =
-        let menu = 
-            { 
-                title = GAME_TITLE
-                titleFont = Fonts.title
-                previousInput = Keyboard.GetState()
-                currentSelection = 0
-                items = [| RESUME_GAME; QUIT_GAME |]
-                itemFont = Fonts.menu
-            }
-        Paused(game, menu)
+        Paused(game, UI.pauseMenu())
 
     let createGameState input players map = 
         let game = 
@@ -64,7 +45,7 @@ module GameStates =
             }
         Game game
 
-    let updatePauseMenu (game : GameStateData) menu =
+    let updatePauseMenu (game : GameStateData) (menu : UI.MenuData) =
         let currentKs = Keyboard.GetState()
         let updatedGame = { game with previousInput = currentKs }
         match (menu.previousInput, currentKs) with
@@ -72,17 +53,17 @@ module GameStates =
         | KeyPressed Keys.Up -> 
             if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
             Sounds.click 2
-            let currentSelection = menu.currentSelection - 1
+            let currentSelection = menu.selectedItem - 1
             let currentSelection = if currentSelection < 0 then menu.items.Length - 1 else currentSelection
-            Paused(updatedGame, { menu with previousInput = currentKs; currentSelection = currentSelection })
+            Paused(updatedGame, { menu with previousInput = currentKs; selectedItem = currentSelection })
         | KeyPressed Keys.Down -> 
             if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
             Sounds.click 1
-            let currentSelection = menu.currentSelection + 1
+            let currentSelection = menu.selectedItem + 1
             let currentSelection = if currentSelection >= menu.items.Length then 0 else currentSelection
-            Paused(updatedGame, { menu with previousInput = currentKs; currentSelection = currentSelection })
+            Paused(updatedGame, { menu with previousInput = currentKs; selectedItem = currentSelection })
         | KeyPressed Keys.Enter ->
-            match menu.currentSelection with
+            match menu.selectedItem with
             | 0 -> Game updatedGame
             | 1 -> 
                 Sounds.randomClick()
@@ -122,27 +103,15 @@ module GameStates =
         | Game data -> updateGame gameTime data camera
         | Quit -> gameState
 
-    let drawPauseMenu pixel (menu : MenuData) (sb : SpriteBatch) = 
-        let background = Rectangle(0, 0, sb.GraphicsDevice.Viewport.Width, sb.GraphicsDevice.Viewport.Height)
-        let titleHeight = menu.titleFont.MeasureString("title").Y
-        let itemHeight = menu.itemFont.MeasureString("item").Y
-        drawRectangle sb pixel background Color.LightSlateGray
-        sb.DrawString(menu.titleFont, menu.title, Vector2(100f, 100f), Color.DarkSlateBlue)
-        let drawItem idx (item : string) =
-            let color = if idx = menu.currentSelection then Color.White else Color.DarkSlateBlue
-            let position = Vector2(100f, 100f + titleHeight + (itemHeight * float32 idx))
-            sb.DrawString(menu.itemFont, item, position, color)
-        Seq.iteri drawItem menu.items
-
     let drawGame pixel (game : GameStateData) (sb : SpriteBatch)  =
-        //TileMap.draw sb game.tileMap 
-        //Seq.iter (Players.draw sb pixel) game.players
         let player1 = game.players.[0]
         Projection.project options player1
         |> Seq.iter (Projection.draw sb)
 
     let draw drawWithCamera drawWithoutCamera pixel gameState = 
+        // A function alias to swap the parameters
+        let drawMenu' menu sb = UI.drawMenu sb menu
         match gameState with
         | Game game -> drawWithoutCamera(drawGame pixel game)
-        | Paused (_, menu) -> drawWithoutCamera(drawPauseMenu pixel menu)
+        | Paused (_, menu) -> drawWithoutCamera(drawMenu' menu)
         | _ -> failwith GAMESTATES_DRAW_ERROR

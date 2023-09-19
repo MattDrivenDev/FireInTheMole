@@ -9,6 +9,7 @@
     <Compile Include="MagicStrings.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Fonts.fs" />
+    <Compile Include="UI.fs" />
     <Compile Include="Audio.fs" />
     <Compile Include="Cameras.fs" />
     <Compile Include="Animations.fs" />

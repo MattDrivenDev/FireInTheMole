@@ -75,7 +75,7 @@ type FireInTheMoleGame() as this =
         |]
 
     let loadTilemap() =
-        TileMap.create this.Content "maps/grass/pillars"
+        TileMap.create this.Content "maps/snow/bigempty"
 
     let loadFonts() = Fonts.loadFonts this.Content
 

@@ -108,9 +108,9 @@ module GameStates =
         Projection.project options player1
         |> Seq.iter (Projection.draw sb)
 
-    let draw drawWithCamera drawWithoutCamera pixel gameState = 
+    let draw drawWithCamera drawWithoutCamera gt pixel gameState = 
         // A function alias to swap the parameters
-        let drawMenu' menu sb = UI.drawMenu sb menu
+        let drawMenu' menu sb = UI.drawMenu sb gt menu
         match gameState with
         | Game game -> drawWithoutCamera(drawGame pixel game)
         | Paused (_, menu) -> drawWithoutCamera(drawMenu' menu)

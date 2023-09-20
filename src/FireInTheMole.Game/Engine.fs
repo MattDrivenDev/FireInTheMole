@@ -143,7 +143,7 @@ type FireInTheMoleGame() as this =
             sb.End()
 
         // Draw the game state to the render target using the camera/no-camera functions
-        GameStates.draw drawWithCamera drawWithoutCamera pixel gameState        
+        GameStates.draw drawWithCamera drawWithoutCamera gameTime pixel gameState        
         
         // Done.
         base.Draw(gameTime)

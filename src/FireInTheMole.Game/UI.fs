@@ -20,10 +20,11 @@ module UI =
             previousInput: KeyboardState
             minValue: float32
             maxValue: float32
-            step: float32
+            speed: float32
             value: float32
             barTexture: Texture2D
             sliderTexture: Texture2D
+            colors: Color * Color
             active: bool
         }
 
@@ -46,8 +47,8 @@ module UI =
         | Center
         | Right
     
-    let loadTextures (content : ContentManager) = 
-        sliderTextures <- content.Load<Texture2D>("UI/sliderbar"), content.Load<Texture2D>("sliderbutton")
+    let loadTextures gd (content : ContentManager) =         
+        sliderTextures <- Helpers.createPixelTexture2D(gd), Helpers.createPixelTexture2D(gd)
 
     let strobeColor (gt : GameTime) color1 color2 = 
         let t = float32 gt.TotalGameTime.TotalSeconds * STROBE_SPEED
@@ -77,21 +78,36 @@ module UI =
             previousInput = Keyboard.GetState()
             minValue = 0f
             maxValue = 1f
-            step = 0.1f
+            speed = 1f
             value = 0.5f
             barTexture = (fst sliderTextures)
             sliderTexture = (snd sliderTextures)
+            colors = (Color.DarkSlateBlue, Color.Yellow)
             active = false
         }
 
+    let toggleSliderActive (slider : SliderData) = 
+        { slider with active = not slider.active }
+
+    let updateSlider (gt : GameTime) (ks : KeyboardState) (slider : SliderData) = 
+        let value = 
+            if ks.IsKeyDown(Keys.Left) then slider.value - (slider.speed * float32 gt.ElapsedGameTime.TotalSeconds)
+            elif ks.IsKeyDown(Keys.Right) then slider.value + (slider.speed * float32 gt.ElapsedGameTime.TotalSeconds)
+            else slider.value
+        let clamped = MathHelper.Clamp(value, slider.minValue, slider.maxValue)
+        { slider with value = clamped; previousInput = ks }
+
     let drawSlider (sb : SpriteBatch) (gt : GameTime) (slider : SliderData) = 
-        let barPosition = slider.position
-        sb.Draw(slider.barTexture, barPosition, Color.White)
-        let sliderHalfSize = Vector2(float32 slider.sliderTexture.Width / 2f, float32 slider.sliderTexture.Height / 2f)
-        let sliderx = (barPosition.X + slider.size.X * slider.value) - sliderHalfSize.X
-        let slidery = barPosition.Y - sliderHalfSize.Y
+        let barSize = Vector2(slider.size.X, slider.size.Y / 4f)
+        let barHalfSize = barSize / 2f
+        let barPosition = slider.position - Vector2(0f, barHalfSize.Y)
+        let sliderSize = Vector2((slider.size.X / 100f) * 5f, slider.size.Y)
+        let sliderHalfSize = sliderSize / 2f
+        let sliderx = (slider.position.X + slider.size.X * slider.value) - sliderHalfSize.X
+        let slidery = slider.position.Y - sliderHalfSize.Y
         let sliderPosition = Vector2(sliderx, slidery)
-        sb.Draw(slider.sliderTexture, sliderPosition, Color.White)
+        sb.Draw(slider.barTexture, Rectangle(barPosition.ToPoint(), barSize.ToPoint()), fst slider.colors)
+        sb.Draw(slider.sliderTexture, Rectangle(sliderPosition.ToPoint(), sliderSize.ToPoint()), snd slider.colors)
 
     let drawMenu (sb : SpriteBatch) gt (menu : MenuData) =
         let titleSize = menu.titleFont.MeasureString(menu.title)

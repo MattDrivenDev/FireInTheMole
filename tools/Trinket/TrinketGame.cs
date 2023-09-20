@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-
+using FireInTheMole.Game;
 
 namespace Trinket
 {
@@ -10,6 +10,7 @@ namespace Trinket
     {
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
+        UI.SliderData _slider;
 
         public TrinketGame()
         {
@@ -29,6 +30,7 @@ namespace Trinket
 
         protected override void LoadContent()
         {
+            UI.loadTextures(Content);
             base.LoadContent();
         }
 

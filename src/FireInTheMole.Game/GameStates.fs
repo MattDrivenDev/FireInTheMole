@@ -47,32 +47,39 @@ module GameStates =
 
     let updatePauseMenu (game : GameStateData) (menu : UI.MenuData) =
         let currentKs = Keyboard.GetState()
-        let updatedGame = { game with previousInput = currentKs }
+        let updatedGame = { game with previousInput = currentKs }        
+        match menu.items.[menu.selectedItem] with
+        | UI.Slider(s, slider) -> 
+            let updatedSlider = UI.updateSlider currentKs slider
+            menu.items.[menu.selectedItem] <- UI.Slider(s, updatedSlider)    
+        | _ -> ()
         match (menu.previousInput, currentKs) with
         | KeyPressed Keys.Escape -> Game updatedGame
         | KeyPressed Keys.Up -> 
-            if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
+            if menu.items.[menu.selectedItem] = UI.Simple QUIT_GAME_CONFIRMATION then menu.items.[menu.selectedItem] <- UI.Simple QUIT_GAME
             Sounds.click 2
             let currentSelection = menu.selectedItem - 1
             let currentSelection = if currentSelection < 0 then menu.items.Length - 1 else currentSelection
             Paused(updatedGame, { menu with previousInput = currentKs; selectedItem = currentSelection })
         | KeyPressed Keys.Down -> 
-            if menu.items.[1] = QUIT_GAME_CONFIRMATION then menu.items.[1] <- QUIT_GAME
+            if menu.items.[menu.selectedItem] = UI.Simple QUIT_GAME_CONFIRMATION then menu.items.[menu.selectedItem] <- UI.Simple QUIT_GAME
             Sounds.click 1
             let currentSelection = menu.selectedItem + 1
             let currentSelection = if currentSelection >= menu.items.Length then 0 else currentSelection
             Paused(updatedGame, { menu with previousInput = currentKs; selectedItem = currentSelection })
         | KeyPressed Keys.Enter ->
-            match menu.selectedItem with
-            | 0 -> Game updatedGame
-            | 1 -> 
+            match menu.items.[menu.selectedItem] with
+            | UI.Simple RESUME_GAME -> 
                 Sounds.randomClick()
-                if menu.items.[1] = QUIT_GAME then
-                    menu.items.[1] <- QUIT_GAME_CONFIRMATION
-                    Paused (updatedGame, { menu with previousInput = currentKs })
-                else
-                    Quit
-            | _ -> failwith PAUSE_MENU_UPDATE_ERROR
+                Game updatedGame
+            | UI.Simple QUIT_GAME -> 
+                Sounds.randomClick()
+                menu.items.[menu.selectedItem] <- UI.Simple QUIT_GAME_CONFIRMATION
+                Paused (updatedGame, { menu with previousInput = currentKs })
+            | UI.Simple QUIT_GAME_CONFIRMATION -> 
+                Sounds.randomClick()
+                Quit
+            | _ -> Paused(updatedGame, { menu with previousInput = currentKs; })
         | _ -> Paused(updatedGame, { menu with previousInput = currentKs })
 
     let updateGame gameTime (game : GameStateData) (camera : OrthographicCamera) =

@@ -34,9 +34,7 @@ namespace Trinket
             Fonts.loadFonts(Content);
             UI.loadTextures(GraphicsDevice, Content);
 
-            _slider = UI.slider(
-                position: new Vector2(20, 20),
-                size: new Vector2(400, 20));
+            _slider = UI.slider(size: new Vector2(400, 20));
 
             _pauseMenu = UI.pauseMenu();
 
@@ -58,7 +56,7 @@ namespace Trinket
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin();
-            UI.drawSlider(_spriteBatch, gameTime, _slider);
+            UI.drawSlider(_spriteBatch, gameTime, _slider, new Vector2(200, 200));
             UI.drawMenu(_spriteBatch, gameTime, _pauseMenu);
 
             _spriteBatch.End();

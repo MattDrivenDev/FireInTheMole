@@ -81,6 +81,8 @@ type FireInTheMoleGame() as this =
 
     let loadSounds() = Sounds.loadSounds this.Content
 
+    let loadUI() = UI.loadTextures this.GraphicsDevice this.Content
+
     member this.Graphics = graphics
 
     override this.Initialize() =
@@ -91,6 +93,7 @@ type FireInTheMoleGame() as this =
         sb <- new SpriteBatch(this.GraphicsDevice)    
         let ks = Keyboard.GetState();
         loadTextures()
+        loadUI()
         let tileMap = loadTilemap()
         let players = loadPlayers tileMap
         loadFonts()

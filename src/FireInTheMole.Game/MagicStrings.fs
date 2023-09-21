@@ -10,6 +10,9 @@ module MagicStrings =
     let QUIT_GAME = "Quit Game"
 
     [<Literal>]
+    let MUSIC_VOLUME = "Music Volume"
+
+    [<Literal>]
     let QUIT_GAME_CONFIRMATION = "Are you sure you want to quit?"
 
     [<Literal>]

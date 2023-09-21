@@ -15,12 +15,11 @@ module UI =
 
     type SliderData = 
         {
-            position: Vector2
             size: Vector2
             previousInput: KeyboardState
             minValue: float32
             maxValue: float32
-            speed: float32
+            step: float32
             value: float32
             barTexture: Texture2D
             sliderTexture: Texture2D
@@ -37,7 +36,7 @@ module UI =
             title: string
             titleFont: SpriteFont
             titleColor: Color
-            items: string array
+            items: MenuItem array
             itemFont: SpriteFont
             itemColors: Color * Color
             selectedItem: int
@@ -46,6 +45,23 @@ module UI =
         | Left
         | Center
         | Right
+    and MenuItem = 
+        | Simple of string
+        | Slider of string * SliderData
+
+    let slider size = 
+        {
+            size = size
+            previousInput = Keyboard.GetState()
+            minValue = 0f
+            maxValue = 1f
+            step = 0.1f
+            value = 0.5f
+            barTexture = (fst sliderTextures)
+            sliderTexture = (snd sliderTextures)
+            colors = (Color.DarkSlateBlue, Color.Yellow)
+            active = false
+        }
     
     let loadTextures gd (content : ContentManager) =         
         sliderTextures <- Helpers.createPixelTexture2D(gd), Helpers.createPixelTexture2D(gd)
@@ -57,7 +73,8 @@ module UI =
         Color.Lerp(color1, color2, amount)
 
     let pauseMenu() = 
-       { 
+        let volumeSlider = slider (Vector2(200f, 20f))
+        { 
             position = Vector2(320f, 100f)
             alignment = TextAlignment.Center
             previousInput = Keyboard.GetState()
@@ -65,46 +82,37 @@ module UI =
             title = GAME_TITLE
             titleFont = Fonts.title
             titleColor = Color.Yellow
-            items = [| RESUME_GAME; QUIT_GAME |]
+            items = 
+                [| 
+                    Simple RESUME_GAME
+                    Slider(MUSIC_VOLUME, volumeSlider)
+                    Simple QUIT_GAME 
+                |]
             itemFont = Fonts.menu
             itemColors = (Color.DarkSlateBlue, Color.Yellow)
             selectedItem = 0
         }
 
-    let slider position size = 
-        {
-            position = position
-            size = size
-            previousInput = Keyboard.GetState()
-            minValue = 0f
-            maxValue = 1f
-            speed = 1f
-            value = 0.5f
-            barTexture = (fst sliderTextures)
-            sliderTexture = (snd sliderTextures)
-            colors = (Color.DarkSlateBlue, Color.Yellow)
-            active = false
-        }
-
     let toggleSliderActive (slider : SliderData) = 
         { slider with active = not slider.active }
 
-    let updateSlider (gt : GameTime) (ks : KeyboardState) (slider : SliderData) = 
+    let updateSlider (ks : KeyboardState) (slider : SliderData) = 
         let value = 
-            if ks.IsKeyDown(Keys.Left) then slider.value - (slider.speed * float32 gt.ElapsedGameTime.TotalSeconds)
-            elif ks.IsKeyDown(Keys.Right) then slider.value + (slider.speed * float32 gt.ElapsedGameTime.TotalSeconds)
-            else slider.value
+            match slider.previousInput, ks with
+            | KeyPressed Keys.Left -> slider.value - slider.step
+            | KeyPressed Keys.Right -> slider.value + slider.step
+            | _ -> slider.value
         let clamped = MathHelper.Clamp(value, slider.minValue, slider.maxValue)
         { slider with value = clamped; previousInput = ks }
 
-    let drawSlider (sb : SpriteBatch) (gt : GameTime) (slider : SliderData) = 
+    let drawSlider (sb : SpriteBatch) (gt : GameTime) (slider : SliderData) position = 
         let barSize = Vector2(slider.size.X, slider.size.Y / 4f)
         let barHalfSize = barSize / 2f
-        let barPosition = slider.position - Vector2(0f, barHalfSize.Y)
+        let barPosition = position - Vector2(0f, barHalfSize.Y)
         let sliderSize = Vector2((slider.size.X / 100f) * 5f, slider.size.Y)
         let sliderHalfSize = sliderSize / 2f
-        let sliderx = (slider.position.X + slider.size.X * slider.value) - sliderHalfSize.X
-        let slidery = slider.position.Y - sliderHalfSize.Y
+        let sliderx = (position.X + slider.size.X * slider.value) - sliderHalfSize.X
+        let slidery = position.Y - sliderHalfSize.Y
         let sliderPosition = Vector2(sliderx, slidery)
         sb.Draw(slider.barTexture, Rectangle(barPosition.ToPoint(), barSize.ToPoint()), fst slider.colors)
         sb.Draw(slider.sliderTexture, Rectangle(sliderPosition.ToPoint(), sliderSize.ToPoint()), snd slider.colors)
@@ -116,7 +124,7 @@ module UI =
             | Left -> menu.position
             | Center -> Vector2(menu.position.X - titleSize.X / 2f, menu.position.Y)
             | Right -> Vector2(menu.position.X - titleSize.X, menu.position.Y)
-        let drawItem n (item : string) =
+        let drawSimpleItem n (item : string) =
             let itemSize = menu.itemFont.MeasureString(item)
             let itemPosition = 
                 match menu.alignment with
@@ -127,5 +135,16 @@ module UI =
                 if n = menu.selectedItem then strobeColor gt (fst menu.itemColors) (snd menu.itemColors) 
                 else fst menu.itemColors
             sb.DrawString(menu.itemFont, item, itemPosition, color)
+        let drawItem n (item : MenuItem) =
+            match item with
+            | Simple s -> drawSimpleItem n s
+            | Slider(s, slider) -> 
+                drawSimpleItem n s
+                let pos = 
+                    match menu.alignment with
+                    | Left -> Vector2(titlePosition.X, titlePosition.Y + titleSize.Y + float32 n * slider.size.Y)
+                    | Center -> Vector2(titlePosition.X + titleSize.X / 2f - slider.size.X / 2f, titlePosition.Y + titleSize.Y + float32 n * slider.size.Y)
+                    | Right -> Vector2(titlePosition.X + titleSize.X - slider.size.X, titlePosition.Y + titleSize.Y + float32 n * slider.size.Y)
+                drawSlider sb gt slider pos
         sb.DrawString(menu.titleFont, menu.title, titlePosition, menu.titleColor)
         Seq.iteri drawItem menu.items

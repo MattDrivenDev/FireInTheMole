@@ -8,9 +8,6 @@ open MonoGame.Extended
 open MonoGame.Extended.ViewportAdapters
 
 
-module Engine = 
-    ()
-
 type FireInTheMoleGame() as this = 
     inherit Game()
 
@@ -23,7 +20,7 @@ type FireInTheMoleGame() as this =
     let mutable circle = Unchecked.defaultof<Texture2D>
     let mutable yellow = Unchecked.defaultof<Texture2D>
     let mutable camera = Unchecked.defaultof<OrthographicCamera>
-    let mutable gameState = Unchecked.defaultof<GameStates.GameState>
+    let mutable gameState = Unchecked.defaultof<GameState.GameState>
 
     do
         this.Content.RootDirectory <- "Content"
@@ -94,21 +91,21 @@ type FireInTheMoleGame() as this =
         let ks = Keyboard.GetState();
         loadTextures()
         loadUI()
-        let tileMap = loadTilemap()
-        let players = loadPlayers tileMap
         loadFonts()
         loadSounds()
-        gameState <- GameStates.createGameState ks players tileMap
+        let tileMap = loadTilemap()
+        gameState <- GameState.GameScreen.load (fun _ -> loadPlayers tileMap) (fun _ -> tileMap) 
         base.LoadContent()
 
     override this.Update(gametime) =
-        gameState <- GameStates.update gametime gameState camera
-        if gameState = GameStates.Quit then this.Exit()        
-        match Keyboard.GetState() with
-        | KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
-        | KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
-        | KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
-        | _ -> ()        
+        //gameState <- GameState.PauseMenu.update gametime
+        gameState <- GameState.update gametime gameState camera
+        if gameState = GameState.Quit then this.Exit()        
+        //match Keyboard.GetState() with
+        //| KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
+        //| KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
+        //| KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
+        //| _ -> ()        
         base.Update(gametime)
 
     override this.Draw(gameTime) = 
@@ -146,7 +143,7 @@ type FireInTheMoleGame() as this =
             sb.End()
 
         // Draw the game state to the render target using the camera/no-camera functions
-        GameStates.draw drawWithCamera drawWithoutCamera gameTime pixel gameState        
+        GameState.draw drawWithCamera drawWithoutCamera gameTime pixel gameState        
         
         // Done.
         base.Draw(gameTime)

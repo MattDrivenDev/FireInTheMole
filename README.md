@@ -34,4 +34,3 @@ So, consider this to be a kind of prototype++.
  - Floored: to figure out how to do the floor texturing (Mode7 camera)... hopefully this will work!
  - Collider: to figure out how to do the collision detection.
  - (Ray) Stantz: to figure out how to do the ray casting.
- - Trinket: a playground for UI widgets etc.

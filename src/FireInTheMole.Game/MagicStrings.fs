@@ -4,7 +4,7 @@
 module MagicStrings = 
 
     [<Literal>]
-    let GAME_TITLE = "Fire In The Mole!"
+    let GAME_TITLE = "FIRE IN THE MOLE"
 
     [<Literal>]
     let QUIT_GAME = "Quit Game"
@@ -13,16 +13,13 @@ module MagicStrings =
     let MUSIC_VOLUME = "Music Volume"
 
     [<Literal>]
-    let QUIT_GAME_CONFIRMATION = "Are you sure you want to quit?"
+    let QUIT_GAME_CONFIRMATION = "Quit Game? (Press Enter to Confirm)"
 
     [<Literal>]
     let RESUME_GAME = "Resume Game"
 
     [<Literal>]
     let PAUSE_MENU_UPDATE_ERROR = "Error in the pause menu update function"
-
-    [<Literal>]
-    let GAMESTATES_DRAW_ERROR = "GameStates.draw: Not implemented"
 
     [<Literal>]
     let WALLS_LAYER_NAME = "Walls"

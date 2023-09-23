@@ -3,8 +3,6 @@
 open Microsoft.Xna.Framework.Input
 open Microsoft.Xna.Framework.Graphics
 open Microsoft.Xna.Framework
-open System
-
 
 module GameState = 
 
@@ -32,12 +30,11 @@ module GameState =
 
         let mutable tileMap = Unchecked.defaultof<TileMap.TileMap>
 
-        let mutable players = Unchecked.defaultof<Players.Player array>
+        let mutable gamePlayers = Unchecked.defaultof<Players.Player array>
 
-        let load loadPlayers loadTileMap = 
-            tileMap <- loadTileMap()
-            players <- loadPlayers()
-            Game
+        let load players map = 
+            tileMap <- map
+            gamePlayers <- players
 
         let update gt =
             let previousKs = cachedKs
@@ -50,14 +47,14 @@ module GameState =
             | _ -> 
                 tileMap <- TileMap.update gt tileMap
                 let mapBounds = TileMap.getCollidableTiles tileMap
-                players <- players 
+                gamePlayers <- gamePlayers 
                     |> Seq.map (fun p -> p, Players.getInput p)
                     |> Seq.map (Players.update gt (tileMap, mapBounds))
                     |> Array.ofSeq
                 Game
 
         let draw sb =
-            let player1 = players.[0]
+            let player1 = gamePlayers.[0]
             Projection.project options player1
             |> Seq.iter (Projection.draw sb)
 
@@ -144,9 +141,78 @@ module GameState =
 
     module TitleMenu =
 
-        let update gt = Title
+        let POSITION_X, POSITION_Y = float32 SCREEN_WIDTH_HALF, float32 SCREEN_HEIGHT_HALF
+        
+        let items = [| SINGLE_PLAYER; MULTIPLAYER; OPTIONS_MENU; VIEW_CREDITS; QUIT_GAME |]
 
-        let draw gt sb = ()
+        let mutable cachedKs = Keyboard.GetState()
+
+        let mutable selectedItem = 0
+
+        let inline selectItem n = 
+            selectedItem <- MathHelper.Clamp(selectedItem + n, 0, items.Length - 1)
+            if selectedItem <> 4 then items.[4] <- QUIT_GAME
+            Sounds.click selectedItem
+            Title
+
+        let inline activateItem() =
+            match items.[selectedItem] with
+            | SINGLE_PLAYER -> Game
+            | MULTIPLAYER -> Title
+            | OPTIONS_MENU -> Title
+            | VIEW_CREDITS -> Title
+            | QUIT_GAME_CONFIRMATION -> Quit
+            | QUIT_GAME -> 
+                Sounds.randomClick()
+                items.[selectedItem] <- QUIT_GAME_CONFIRMATION
+                Title
+            | _ -> Title
+
+        let update (gt : GameTime) = 
+            let previousKs = cachedKs
+            let ks = Keyboard.GetState()
+            cachedKs <- ks            
+            match previousKs, ks with
+            | KeyPressed Keys.Up -> selectItem -1
+            | KeyPressed Keys.Down -> selectItem 1
+            | KeyPressed Keys.Enter -> activateItem()
+            | KeyPressed Keys.Escape ->                 
+                selectedItem <- items.Length - 1
+                Sounds.click selectedItem
+                Title
+            | _ -> Title
+
+        let draw gt (sb : SpriteBatch) = 
+            let quitConfirmation = items.[selectedItem] = QUIT_GAME_CONFIRMATION
+            // Measure the strings for sizes
+            let singleplayerSize = Fonts.menu.MeasureString SINGLE_PLAYER
+            let multiplayerSize = Fonts.menu.MeasureString MULTIPLAYER
+            let optionsSize = Fonts.menu.MeasureString OPTIONS_MENU
+            let creditsSize = Fonts.menu.MeasureString VIEW_CREDITS
+            let quitSize = Fonts.menu.MeasureString (if quitConfirmation then QUIT_GAME_CONFIRMATION else QUIT_GAME)
+            let totalHeight = singleplayerSize.Y + multiplayerSize.Y + optionsSize.Y + creditsSize.Y + quitSize.Y
+            // Calculate the positions so that the menu is centered
+            let singleplayerPosition = Vector2(POSITION_X - singleplayerSize.X / 2f, POSITION_Y - totalHeight / 2f)
+            let multiplayerPosition = Vector2(POSITION_X, singleplayerPosition.Y) + Vector2(- multiplayerSize.X / 2f, singleplayerSize.Y)
+            let optionsPosition = Vector2(POSITION_X, multiplayerPosition.Y) + Vector2(- optionsSize.X / 2f, multiplayerSize.Y)
+            let creditsPosition = Vector2(POSITION_X, optionsPosition.Y) + Vector2(- creditsSize.X / 2f, optionsSize.Y)
+            let quitPosition = Vector2(POSITION_X, creditsPosition.Y) + Vector2(- quitSize.X / 2f, creditsSize.Y)
+            // Calculate the colors
+            let strobeColor = UI.strobeColor gt Color.Yellow Color.DarkSlateBlue
+            let singleplayerColor = if items.[selectedItem] = SINGLE_PLAYER then strobeColor else Color.DarkSlateBlue
+            let multiplayerColor = if items.[selectedItem] = MULTIPLAYER then strobeColor else Color.DarkSlateBlue
+            let optionsColor = if items.[selectedItem] = OPTIONS_MENU then strobeColor else Color.DarkSlateBlue
+            let creditsColor = if items.[selectedItem] = VIEW_CREDITS then strobeColor else Color.DarkSlateBlue
+            let quitGameColor = 
+                if items.[selectedItem] = QUIT_GAME || items.[selectedItem] = QUIT_GAME_CONFIRMATION 
+                    then strobeColor 
+                    else Color.DarkSlateBlue
+            // Draw the strings and other UI elements
+            sb.DrawString(Fonts.menu, SINGLE_PLAYER, singleplayerPosition, singleplayerColor)
+            sb.DrawString(Fonts.menu, MULTIPLAYER, multiplayerPosition, multiplayerColor)
+            sb.DrawString(Fonts.menu, OPTIONS_MENU, optionsPosition, optionsColor)
+            sb.DrawString(Fonts.menu, VIEW_CREDITS, creditsPosition, creditsColor)
+            sb.DrawString(Fonts.menu, (if quitConfirmation then QUIT_GAME_CONFIRMATION else QUIT_GAME), quitPosition, quitGameColor)
 
 
     let update gt gameState camera = 

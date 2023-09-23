@@ -84,3 +84,11 @@ module MagicStrings =
     let FONT_TEXT = "text"
     [<Literal>]
     let CONTENT_SOUNDS_UI = "Sounds/UI"
+    [<Literal>]
+    let SINGLE_PLAYER = "Single Player"
+    [<Literal>]
+    let MULTIPLAYER = "Multiplayer"
+    [<Literal>]
+    let OPTIONS_MENU = "Options"
+    [<Literal>]
+    let VIEW_CREDITS = "Credits"

@@ -20,12 +20,13 @@ type FireInTheMoleGame() as this =
     let mutable circle = Unchecked.defaultof<Texture2D>
     let mutable yellow = Unchecked.defaultof<Texture2D>
     let mutable camera = Unchecked.defaultof<OrthographicCamera>
+    let mutable previousState = Unchecked.defaultof<GameState.GameState>
     let mutable gameState = Unchecked.defaultof<GameState.GameState>
 
     do
         this.Content.RootDirectory <- "Content"
         graphics.GraphicsProfile <- GraphicsProfile.HiDef
-        graphics.IsFullScreen <- false
+        graphics.IsFullScreen <- FULLSCREEN
 
     let initializeGraphics() =
         scale <- MathHelper.Clamp(scale, 1f, 2f)
@@ -94,18 +95,15 @@ type FireInTheMoleGame() as this =
         loadFonts()
         loadSounds()
         let tileMap = loadTilemap()
-        gameState <- GameState.GameScreen.load (fun _ -> loadPlayers tileMap) (fun _ -> tileMap) 
+        let players = loadPlayers tileMap
+        GameState.GameScreen.load players tileMap 
+        gameState <- GameState.Title
         base.LoadContent()
 
     override this.Update(gametime) =
-        //gameState <- GameState.PauseMenu.update gametime
+        previousState <- gameState
         gameState <- GameState.update gametime gameState camera
-        if gameState = GameState.Quit then this.Exit()        
-        //match Keyboard.GetState() with
-        //| KeyDown Keys.F11 -> graphics.IsFullScreen <- not graphics.IsFullScreen; initializeGraphics()
-        //| KeyDown Keys.Add -> scale <- scale + 1f; initializeGraphics()
-        //| KeyDown Keys.Subtract -> scale <- scale - 1f; initializeGraphics()
-        //| _ -> ()        
+        if gameState = GameState.Quit then this.Exit()         
         base.Update(gametime)
 
     override this.Draw(gameTime) = 
@@ -143,7 +141,8 @@ type FireInTheMoleGame() as this =
             sb.End()
 
         // Draw the game state to the render target using the camera/no-camera functions
-        GameState.draw drawWithCamera drawWithoutCamera gameTime pixel gameState        
+        let stateToDraw = if previousState = gameState then gameState else previousState
+        GameState.draw drawWithCamera drawWithoutCamera gameTime pixel stateToDraw
         
         // Done.
         base.Draw(gameTime)

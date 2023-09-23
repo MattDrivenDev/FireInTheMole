@@ -144,8 +144,8 @@ module RayCasting =
                 horizontalX <- horizontalX % 1f
                 textureOffset <- if sin > 0f then 1f - horizontalX else horizontalX
             // Fix the fish-eye effect
-            if rayCaster.options.correctFishEye then 
-                depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
+            //if rayCaster.options.correctFishEye then 
+            //    depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
             let ray = 
                 {
                     sin = sin

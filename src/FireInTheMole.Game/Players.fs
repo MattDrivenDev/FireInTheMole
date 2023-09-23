@@ -6,13 +6,6 @@ open Microsoft.Xna.Framework.Input
 [<RequireQualifiedAccess>]
 module Players = 
 
-    [<Literal>] 
-    let size = 192
-    [<Literal>]
-    let speed = 500f
-    [<Literal>]
-    let turnSpeed = 10f 
-
     type Player = 
         {
             position: Vector2
@@ -108,8 +101,8 @@ module Players =
         {
             position = spawn
             angle = 0f
-            speed = speed
-            size = Point(size, size)
+            speed = PLAYER_SPEED
+            size = Point(PLAYER_SIZE, PLAYER_SIZE)
             offset = Point(0, 0)
             index = idx
             active = active
@@ -124,7 +117,7 @@ module Players =
             let radians = toRadians player.angle
             let c = (cos radians)
             let s = (sin radians) 
-            let finish = player.position + Vector2(c, s) * float32 size     
+            let finish = player.position + Vector2(c, s) * float32 PLAYER_SIZE     
             let rev = 
                 match animationKey player.angle with
                 | Animations.MoveAnimation Animations.AnimationAngle.Left -> true
@@ -170,7 +163,7 @@ module Players =
         let deltatime = gametime.ElapsedGameTime.TotalSeconds
         let apply input = 
             let newAngle = 
-                player.angle + input.rotate * turnSpeed * float32(deltatime) 
+                player.angle + input.rotate * PLAYER_SPEED_ROTATION * float32(deltatime) 
                 |> normAngle
             let radians = toRadians newAngle
             let c = (cos radians)

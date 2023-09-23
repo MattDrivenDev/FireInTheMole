@@ -8,9 +8,6 @@ open System
 [<RequireQualifiedAccess>]
 module RayCasting = 
 
-    [<Literal>]
-    let MaxRayCount = 320
-
     [<Struct>] 
     type Ray = 
         {
@@ -22,7 +19,6 @@ module RayCasting =
             tileOffset: float32
         }
 
-    [<Struct>]
     type Options = 
         {
             count: int
@@ -63,7 +59,7 @@ module RayCasting =
     let draw (sb : SpriteBatch) (c : Color) (rayCaster : RayCaster) = 
         let tx = createPixelTexture2D sb.GraphicsDevice
         let mutable rectColor = Color.Magenta
-        let rect = Rectangle(256, 0, 256, 256)
+        let rect = Rectangle(MAP_TILE_SIZE, 0, MAP_TILE_SIZE, MAP_TILE_SIZE)
         let drawOne (ray : Ray) =
             let finish = rayCaster.origin + Vector2(ray.depth * ray.cos, ray.depth * ray.sin)
             drawLine sb tx rayCaster.origin finish 2 c
@@ -150,7 +146,6 @@ module RayCasting =
             // Fix the fish-eye effect
             if rayCaster.options.correctFishEye then 
                 depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
-            //depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
             let ray = 
                 {
                     sin = sin

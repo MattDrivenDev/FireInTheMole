@@ -24,8 +24,8 @@ module Helpers =
         | _ -> None
 
     let normAngle angle = 
-        let angle = angle % 360f
-        if angle < 0f then angle + 360f else angle
+        let angle = angle % DEGS_360
+        if angle < 0f then angle + DEGS_360 else angle
 
     let normRadianAngle angleInRadians = 
         let angle = angleInRadians % (2f * MathF.PI)
@@ -115,4 +115,4 @@ module Helpers =
         | PlayerIndex.Two -> 1
         | PlayerIndex.Three -> 2
         | PlayerIndex.Four -> 3
-        | _ -> failwith "Invalid player index"
+        | _ -> failwith INVALID_PLAYER_INDEX

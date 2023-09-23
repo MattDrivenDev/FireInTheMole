@@ -29,15 +29,15 @@ type FireInTheMoleGame() as this =
 
     let initializeGraphics() =
         scale <- MathHelper.Clamp(scale, 1f, 2f)
-        let renderWidth = 640 * int scale
-        let renderHeight = 360 * int scale
+        let renderWidth = SCREEN_WIDTH * int scale
+        let renderHeight = SCREEN_HEIGHT * int scale
         graphics.PreferredBackBufferWidth <- renderWidth
         graphics.PreferredBackBufferHeight <- renderHeight
         graphics.ApplyChanges()
         rt <- new RenderTarget2D(
             this.GraphicsDevice,
-            640,
-            360,
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
             false,
             SurfaceFormat.Color,
             DepthFormat.Depth24Stencil8);
@@ -50,12 +50,12 @@ type FireInTheMoleGame() as this =
         pixel <- createPixelTexture2D this.GraphicsDevice
         // A circle could be drawn with pixels, but that nukes the framerate so
         // we'll create the texture once and reuse it
-        circle <- new Texture2D(this.GraphicsDevice, Players.size, Players.size, false, SurfaceFormat.Color)
-        Array.init Players.size (fun y -> Array.init Players.size (fun x -> 
-            let dx = float32 (x - Players.size / 2)
-            let dy = float32 (y - Players.size / 2)
+        circle <- new Texture2D(this.GraphicsDevice, PLAYER_SIZE, PLAYER_SIZE, false, SurfaceFormat.Color)
+        Array.init PLAYER_SIZE (fun y -> Array.init PLAYER_SIZE (fun x -> 
+            let dx = float32 (x - PLAYER_SIZE / 2)
+            let dy = float32 (y - PLAYER_SIZE / 2)
             let d = dx * dx + dy * dy
-            if d < float32(Players.size / 2) then Color.White else Color.Transparent))
+            if d < float32(PLAYER_SIZE / 2) then Color.White else Color.Transparent))
         |> Array.concat
         |> circle.SetData
         // Yellow mole spritesheet
@@ -63,7 +63,7 @@ type FireInTheMoleGame() as this =
 
     let loadPlayers (tilemap : TileMap.TileMap) =
         let maxLength = MathF.Max(float32 tilemap.width, float32 tilemap.height) |> int
-        let options = RayCasting.createOptions 90f RayCasting.MaxRayCount maxLength true
+        let options = RayCasting.createOptions 90f RAY_COUNT maxLength CORRECT_FISHEYE
         [| 
             Players.create options tilemap yellow PlayerIndex.One true 
             Players.create options tilemap yellow PlayerIndex.Two true 

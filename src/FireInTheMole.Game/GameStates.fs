@@ -10,6 +10,7 @@ module GameState =
 
     type GameState = 
         | Splash
+        | Title
         | Paused
         | Game
         | Quit
@@ -18,13 +19,13 @@ module GameState =
 
         let options : Projection.ProjectionOptions = 
             {
-                tileWidth = 256
-                screenDistance = int (320f / MathF.Tan(MathHelper.ToRadians(45f)))
-                screenHeight = 360
-                screenHalfHeight = 180
-                screenWidth = 640
-                screenHalfWidth = 320
-                textureMappingWidth = 640 / RayCasting.MaxRayCount
+                tileWidth = MAP_TILE_SIZE
+                screenDistance = PLAYER_PROJECTION_DISTANCE
+                screenHeight = SCREEN_HEIGHT
+                screenHalfHeight = SCREEN_HEIGHT_HALF
+                screenWidth = SCREEN_WIDTH
+                screenHalfWidth = SCREEN_WIDTH_HALF
+                textureMappingWidth = SCREEN_WIDTH / RAY_COUNT
             }
     
         let mutable cachedKs = Keyboard.GetState()
@@ -59,16 +60,10 @@ module GameState =
             Projection.project options player1
             |> Seq.iter (Projection.draw sb)
 
-    /// This another experiment to see if a different coding-style would be more
-    /// suited for this project, since the immutable types being passed around
-    /// is also now getting quite cumbersome to work with.
+
     module PauseMenu = 
 
-        [<Literal>]
-        let POSITION_X = 320f
-        
-        [<Literal>]
-        let POSITION_Y = 180f
+        let POSITION_X, POSITION_Y = float32 SCREEN_WIDTH_HALF, float32 SCREEN_HEIGHT_HALF
         
         let items = [| RESUME_GAME; MUSIC_VOLUME; QUIT_GAME |]
 
@@ -145,9 +140,18 @@ module GameState =
             sb.DrawString(Fonts.menu, (if quitConfirmation then QUIT_GAME_CONFIRMATION else QUIT_GAME), quitGamePosition, quitGameColor)
             UI.drawSlider sb gt musicVolumeSlider musicVolumeSliderPosition
 
+
+    module TitleMenu =
+
+        let update gt = Title
+
+        let draw gt sb = ()
+
+
     let update gt gameState camera = 
         match gameState with
         | Splash -> gameState
+        | Title -> TitleMenu.update gt
         | Paused  -> PauseMenu.update gt
         | Game  -> GameScreen.update gt
         | Quit -> Quit
@@ -155,6 +159,7 @@ module GameState =
     let draw drawWithCamera drawWithoutCamera gt pixel gameState = 
         match gameState with
         | Splash -> ()
+        | Title -> drawWithoutCamera (TitleMenu.draw gt)
         | Game -> drawWithoutCamera GameScreen.draw
         | Paused -> drawWithoutCamera (PauseMenu.draw gt)
         | Quit -> ()

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="MagicStrings.fs" />
+    <Compile Include="TickleItYouLiterals.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Fonts.fs" />
     <Compile Include="UI.fs" />

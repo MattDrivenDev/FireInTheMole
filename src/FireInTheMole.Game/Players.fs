@@ -8,10 +8,11 @@ module Players =
 
     type Player = 
         {
-            position: Vector2
+            bounds: Collisions.BoundingRectangle
+            //position: Vector2
             angle: float32
             speed: float32
-            size: Point
+            //size: Point
             offset: Point
             index: PlayerIndex
             active: bool
@@ -97,12 +98,12 @@ module Players =
     let create options (map : TileMap.TileMap) tx (idx : PlayerIndex) active = 
         let n = playerIndexToArrayIndex idx
         let spawn = TileMap.fromTileCoords map map.spawnPoints.[n]
+        let size = Vector2(float32 PLAYER_SIZE, float32 PLAYER_SIZE)
         let animations = loadAnimations tx
         {
-            position = spawn
+            bounds = Collisions.createBoundingRectangle spawn size
             angle = 0f
             speed = PLAYER_SPEED
-            size = Point(PLAYER_SIZE, PLAYER_SIZE)
             offset = Point(0, 0)
             index = idx
             active = active
@@ -117,17 +118,17 @@ module Players =
             let radians = toRadians player.angle
             let c = (cos radians)
             let s = (sin radians) 
-            let finish = player.position + Vector2(c, s) * float32 PLAYER_SIZE     
+            let finish = player.bounds.center + Vector2(c, s) * float32 PLAYER_SIZE     
             let rev = 
                 match animationKey player.angle with
                 | Animations.MoveAnimation Animations.AnimationAngle.Left -> true
                 | Animations.MoveAnimation Animations.AnimationAngle.UpLeft -> true
                 | Animations.MoveAnimation Animations.AnimationAngle.DownLeft -> true
                 | _ -> false
-            let destination = player.position - (player.size.ToVector2() / 2f)
-            Rectangle(destination.ToPoint(), player.size)
+            let destination = player.bounds.center - (player.bounds.size / 2f)
+            Rectangle(destination.ToPoint(), player.bounds.size.ToPoint())
             |> Animations.draw sb player.currentAnimation Color.White rev
-            drawLine sb pixel player.position finish 1 player.color
+            drawLine sb pixel player.bounds.center finish 1 player.color
 
     /// We're only getting input for player one at the moment
     let getInput player =
@@ -159,8 +160,8 @@ module Players =
                 Some input                 
             else None
 
-    let update (gametime : GameTime) map (player, input) =
-        let deltatime = gametime.ElapsedGameTime.TotalSeconds
+    let update (gametime : GameTime) (map, mapBounds) (player, input) =
+        let deltatime = gametime.ElapsedGameTime.TotalMilliseconds
         let apply input = 
             let newAngle = 
                 player.angle + input.rotate * PLAYER_SPEED_ROTATION * float32(deltatime) 
@@ -179,8 +180,13 @@ module Players =
                 | Some BackwardLeft -> Vector2(-c, -s) + Vector2(s, -c)
                 | Some BackwardRight -> Vector2(-c, -s) + Vector2(-s, c)
                 | None -> Vector2.Zero                
-            let newPosition = player.position + normVector2 positionDelta * player.speed * float32(deltatime)
-            let newRayCaster = RayCasting.update player.rayCaster map newPosition newAngle
+            let velocity = normVector2 positionDelta * player.speed * float32(deltatime)
+            let boundsWithVelocity = Collisions.updateVelocity player.bounds velocity
+            let collisions = Collisions.predictCollisions boundsWithVelocity mapBounds
+            let resolvedBounds = Collisions.resolve boundsWithVelocity collisions
+            let newBounds = Collisions.move resolvedBounds
+            //let newPosition = player.position + normVector2 positionDelta * player.speed * float32(deltatime)
+            let newRayCaster = RayCasting.update player.rayCaster map newBounds.center newAngle
             let newAnimationKey = animationKey newAngle
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
@@ -188,7 +194,7 @@ module Players =
                     then Animations.update gametime player.currentAnimation 
                     else newAnimation
             { player with 
-                position = newPosition
+                bounds = newBounds
                 angle = newAngle
                 currentAnimation = animation
                 rayCaster = newRayCaster}
@@ -196,5 +202,5 @@ module Players =
         | Some input -> apply input
         | None -> 
             // No input means player is dead or inactive etc... not that there is no input from a player.
-            let newRayCaster = RayCasting.update player.rayCaster map player.position player.angle
+            let newRayCaster = RayCasting.update player.rayCaster map player.bounds.center player.angle
             { player with rayCaster = newRayCaster }

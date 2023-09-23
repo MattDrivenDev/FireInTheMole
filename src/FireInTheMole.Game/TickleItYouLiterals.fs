@@ -11,9 +11,9 @@ module ThingsThatShouldProbablyBeConfigurable =
     [<Literal>]
     let TARGET_FPS = 60
     [<Literal>]
-    let SCREEN_WIDTH = 1024
+    let SCREEN_WIDTH = 1600
     [<Literal>]
-    let SCREEN_HEIGHT = 768
+    let SCREEN_HEIGHT = 900
     [<Literal>]
     let CORRECT_FISHEYE = true
     /// Not-Literal: Calculated from SCREEN_WIDTH
@@ -29,9 +29,9 @@ module ThingsThatShouldProbablyBeConfigurable =
     [<Literal>]
     let PLAYER_FOV = 75f
     [<Literal>]
-    let PLAYER_SPEED = 500f
+    let PLAYER_SPEED = 1f
     [<Literal>]
-    let PLAYER_SPEED_ROTATION = 10f 
+    let PLAYER_SPEED_ROTATION = 0.01f 
     [<Literal>]
     let PLAYER_SIZE = 192
     [<Literal>]

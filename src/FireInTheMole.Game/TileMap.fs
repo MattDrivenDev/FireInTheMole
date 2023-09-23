@@ -157,7 +157,7 @@ module TileMap =
                 tmx.Tilesets
                 |> Seq.map mapTileset
                 |> Seq.map (fun t -> t.name, t)
-                |> Map.ofSeq            
+                |> Map.ofSeq
             { 
                 name = tmx.Name
                 tilesets = tilesets
@@ -254,3 +254,40 @@ module TileMap =
             match getTile walls coords with
             | Some tile -> Some tile
             | None -> getTile dirt coords
+
+    /// Perhaps cache this? Can't really... because of the active flag. Hmmm. Lets put that
+    /// on simmer for the moment and circle back to it later.
+    let getCollidableTiles (tilemap: TileMap) = 
+        let wallLayer = getLayer tilemap WALLS_LAYER_NAME
+        let dirtLayer = getLayer tilemap DIRT_LAYER_NAME
+        let size = Vector2(float32 tilemap.tileWidth, float32 tilemap.tileHeight)
+        let centreOffset = size / 2.0f
+        match wallLayer, dirtLayer with
+        | None, None -> [||]
+        | Some walls, None -> 
+            walls.tiles
+            |> Seq.filter (fun t -> t.Value.active)
+            |> Seq.map (fun t -> t.Key)
+            |> Seq.map (fun c -> fromTileCoords tilemap c)
+            |> Seq.map (fun v -> Collisions.createBoundingRectangle (v) size)
+            |> Seq.toArray
+        | None, Some dirt -> 
+            dirt.tiles
+            |> Seq.filter (fun t -> t.Value.active)
+            |> Seq.map (fun t -> t.Key)
+            |> Seq.map (fun c -> fromTileCoords tilemap c)
+            |> Seq.map (fun v -> Collisions.createBoundingRectangle (v) size)
+            |> Seq.toArray
+        | Some walls, Some dirt -> 
+            walls.tiles
+            |> Seq.filter (fun t -> t.Value.active)
+            |> Seq.map (fun t -> t.Key)
+            |> Seq.map (fun c -> fromTileCoords tilemap c)
+            |> Seq.map (fun v -> Collisions.createBoundingRectangle (v) size)
+            |> Seq.append
+                (dirt.tiles
+                |> Seq.filter (fun t -> t.Value.active)
+                |> Seq.map (fun t -> t.Key)
+                |> Seq.map (fun c -> fromTileCoords tilemap c)
+                |> Seq.map (fun v -> Collisions.createBoundingRectangle (v) size))
+            |> Seq.toArray

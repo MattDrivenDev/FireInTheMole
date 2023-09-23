@@ -49,9 +49,10 @@ module GameState =
                 Paused
             | _ -> 
                 tileMap <- TileMap.update gt tileMap
+                let mapBounds = TileMap.getCollidableTiles tileMap
                 players <- players 
                     |> Seq.map (fun p -> p, Players.getInput p)
-                    |> Seq.map (Players.update gt tileMap)
+                    |> Seq.map (Players.update gt (tileMap, mapBounds))
                     |> Array.ofSeq
                 Game
 

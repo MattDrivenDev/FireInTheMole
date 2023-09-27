@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="TickleItYouLiterals.fs" />
     <Compile Include="Helpers.fs" />
+    <Compile Include="Inputs.fs" />
     <Compile Include="Fonts.fs" />
     <Compile Include="UI.fs" />
     <Compile Include="Audio.fs" />
@@ -19,6 +20,7 @@
     <Compile Include="Players.fs" />
     <Compile Include="Projection.fs" />
     <Compile Include="GameStates.fs" />
+    <Compile Include="SplitScreen.fs" />
     <Compile Include="Engine.fs" />
   </ItemGroup>
 

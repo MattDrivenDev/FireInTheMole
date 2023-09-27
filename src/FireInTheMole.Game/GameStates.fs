@@ -72,9 +72,11 @@ module GameState =
         let mutable selectedItem = 0
 
         let inline selectItem n = 
-            selectedItem <- MathHelper.Clamp(selectedItem + n, 0, items.Length - 1)
+            selectedItem <- selectedItem + n
+            if selectedItem < 0 then selectedItem <- items.Length - 1
+            if selectedItem >= items.Length then selectedItem <- 0
             if selectedItem <> 2 then items.[2] <- QUIT_GAME
-            Sounds.click selectedItem
+            Sounds.click 1
             Paused
 
         let inline resumeGame() = 
@@ -150,17 +152,27 @@ module GameState =
         let mutable selectedItem = 0
 
         let inline selectItem n = 
-            selectedItem <- MathHelper.Clamp(selectedItem + n, 0, items.Length - 1)
+            selectedItem <- selectedItem + n
+            if selectedItem < 0 then selectedItem <- items.Length - 1
+            if selectedItem >= items.Length then selectedItem <- 0
             if selectedItem <> 4 then items.[4] <- QUIT_GAME
-            Sounds.click selectedItem
+            Sounds.click 1
             Title
 
         let inline activateItem() =
             match items.[selectedItem] with
-            | SINGLE_PLAYER -> Game
-            | MULTIPLAYER -> Title
-            | OPTIONS_MENU -> Title
-            | VIEW_CREDITS -> Title
+            | SINGLE_PLAYER -> 
+                Sounds.select()
+                Game
+            | MULTIPLAYER -> 
+                Sounds.select()
+                Title
+            | OPTIONS_MENU -> 
+                Sounds.select()
+                Title
+            | VIEW_CREDITS -> 
+                Sounds.select()
+                Title
             | QUIT_GAME_CONFIRMATION -> Quit
             | QUIT_GAME -> 
                 Sounds.randomClick()

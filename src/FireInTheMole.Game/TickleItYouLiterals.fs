@@ -11,9 +11,9 @@ module ThingsThatShouldProbablyBeConfigurable =
     [<Literal>]
     let TARGET_FPS = 60
     [<Literal>]
-    let SCREEN_WIDTH = 1600
+    let SCREEN_WIDTH = 1280
     [<Literal>]
-    let SCREEN_HEIGHT = 900
+    let SCREEN_HEIGHT = 720
     [<Literal>]
     let CORRECT_FISHEYE = true
     /// Not-Literal: Calculated from SCREEN_WIDTH

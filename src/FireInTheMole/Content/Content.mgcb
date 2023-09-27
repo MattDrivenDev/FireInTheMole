@@ -114,3 +114,9 @@
 /processorParam:Quality=Best
 /build:Sounds/UI/click5.wav
 
+#begin Sounds/UI/coin1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/UI/coin1.wav
+

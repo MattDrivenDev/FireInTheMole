@@ -1,6 +1,7 @@
 ﻿namespace FireInTheMole.Game
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
+open System
 
 
 [<RequireQualifiedAccess>]
@@ -9,10 +10,8 @@ module Players =
     type Player = 
         {
             bounds: Collisions.BoundingRectangle
-            //position: Vector2
-            angle: float32
+            direction: Vector2
             speed: float32
-            //size: Point
             offset: Point
             index: PlayerIndex
             active: bool
@@ -84,7 +83,9 @@ module Players =
         |> Seq.map (fun a -> a.key, a)
         |> Map.ofSeq
 
-    let animationKey angle =         
+    let animationKey (direction : Vector2)=
+        let radians = MathF.Atan2(direction.Y, direction.X)
+        let angle = toDegrees radians
         if angle >= 337.5f || angle < 22.5f then Animations.MoveAnimation Animations.AnimationAngle.Right
         elif angle >= 22.5f && angle < 67.5f then Animations.MoveAnimation Animations.AnimationAngle.DownRight
         elif angle >= 67.5f && angle < 112.5f then Animations.MoveAnimation Animations.AnimationAngle.Down
@@ -102,7 +103,7 @@ module Players =
         let animations = loadAnimations tx
         {
             bounds = Collisions.createBoundingRectangle spawn size
-            angle = 0f
+            direction = normVector2 Vector2.One
             speed = PLAYER_SPEED
             offset = Point(0, 0)
             index = idx
@@ -115,12 +116,9 @@ module Players =
 
     let draw sb pixel player  =
         if player.active then  
-            let radians = toRadians player.angle
-            let c = (cos radians)
-            let s = (sin radians) 
-            let finish = player.bounds.center + Vector2(c, s) * float32 PLAYER_SIZE     
+            let finish = player.bounds.center + player.direction * float32 PLAYER_SIZE     
             let rev = 
-                match animationKey player.angle with
+                match animationKey player.direction with
                 | Animations.MoveAnimation Animations.AnimationAngle.Left -> true
                 | Animations.MoveAnimation Animations.AnimationAngle.UpLeft -> true
                 | Animations.MoveAnimation Animations.AnimationAngle.DownLeft -> true
@@ -162,13 +160,13 @@ module Players =
 
     let update (gametime : GameTime) (map, mapBounds) (player, input) =
         let deltatime = gametime.ElapsedGameTime.TotalMilliseconds
+        let currentAngle = MathF.Atan2(player.direction.Y, player.direction.X) |> toDegrees
         let apply input = 
-            let newAngle = 
-                player.angle + input.rotate * PLAYER_SPEED_ROTATION * float32(deltatime) 
-                |> normAngle
+            let newAngle = currentAngle + input.rotate * PLAYER_SPEED_ROTATION * float32(deltatime) |> normAngle
             let radians = toRadians newAngle
             let c = (cos radians)
             let s = (sin radians) 
+            let newDirection = Vector2(c, s)
             let positionDelta = 
                 match input.movement with
                 | Some Forward -> Vector2(c, s)
@@ -185,22 +183,23 @@ module Players =
             let collisions = Collisions.predictCollisions boundsWithVelocity mapBounds
             let resolvedBounds = Collisions.resolve boundsWithVelocity collisions
             let newBounds = Collisions.move resolvedBounds
-            //let newPosition = player.position + normVector2 positionDelta * player.speed * float32(deltatime)
             let newRayCaster = RayCasting.update player.rayCaster map newBounds.center newAngle
-            let newAnimationKey = animationKey newAngle
+            let newAnimationKey = animationKey newDirection
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
                 if newAnimation.key = player.currentAnimation.key
                     then Animations.update gametime player.currentAnimation 
                     else newAnimation
-            { player with 
-                bounds = newBounds
-                angle = newAngle
-                currentAnimation = animation
-                rayCaster = newRayCaster}
+            { 
+                player with 
+                    bounds = newBounds
+                    direction = newDirection
+                    currentAnimation = animation
+                    rayCaster = newRayCaster 
+            }
         match input with
         | Some input -> apply input
         | None -> 
             // No input means player is dead or inactive etc... not that there is no input from a player.
-            let newRayCaster = RayCasting.update player.rayCaster map player.bounds.center player.angle
+            let newRayCaster = RayCasting.update player.rayCaster map player.bounds.center currentAngle
             { player with rayCaster = newRayCaster }

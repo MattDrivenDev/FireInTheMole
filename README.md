@@ -2,13 +2,13 @@
 A game about moles mining with dynamite and blowing each other up (a Bomberstein3D).
 
 ## TODO
- - [x] Replace the player angles with a vector for forward.
  - [ ] Stop "hacking" the fisheye correction in the RayCasting and use a proper viewing plane [like this](https://gamedev.stackexchange.com/questions/169546/understanding-the-rendering-of-the-raycasting-on-flat-screen/169548#169548).
  - [ ] Add a "Days Since Last Accident" counter to the title screen :)
  - [ ] Projection and RayCasting options should be loaded from a config etc.
  - [ ] Add the multiplayer split screen rendering.
  - [ ] Render mole animations in view projections. 
  - [ ] Add the multiplayer input control systems. 
+ - [x] Replace the player angles with a vector for forward.
  - [x] Add a title screen.
  - [x] Apply the map collision detection in the game itself.
  - [x] Pause menu centre alignment.

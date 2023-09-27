@@ -183,7 +183,7 @@ module Players =
             let collisions = Collisions.predictCollisions boundsWithVelocity mapBounds
             let resolvedBounds = Collisions.resolve boundsWithVelocity collisions
             let newBounds = Collisions.move resolvedBounds
-            let newRayCaster = RayCasting.update player.rayCaster map newBounds.center newAngle
+            let newRayCaster = RayCasting.updateByDirection player.rayCaster map newBounds.center newDirection
             let newAnimationKey = animationKey newDirection
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
@@ -201,5 +201,7 @@ module Players =
         | Some input -> apply input
         | None -> 
             // No input means player is dead or inactive etc... not that there is no input from a player.
-            let newRayCaster = RayCasting.update player.rayCaster map player.bounds.center currentAngle
-            { player with rayCaster = newRayCaster }
+            { 
+                player with 
+                    rayCaster = RayCasting.updateByDirection player.rayCaster map player.bounds.center player.direction 
+            }

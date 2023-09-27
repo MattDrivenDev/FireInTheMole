@@ -158,3 +158,21 @@ module RayCasting =
             rayCaster.rays.[i] <- ray
             rayAngleInRadians <- rayAngleInRadians + rayAngleDeltaInRadians
         { rayCaster with origin = origin; angleInDegrees = angleInDegrees; map = map }
+
+    /// Here we go, a re-implementation of the raycasting algorithm using
+    /// forward and right vectors - which doesn't use equal angles for each ray
+    /// so that we don't get the fish-eye effect.
+    /// https://gamedev.stackexchange.com/questions/169546/understanding-the-rendering-of-the-raycasting-on-flat-screen/169548#169548
+    let updateByDirection rayCaster map origin (forward : Vector2) =
+        let right = Vector2(forward.Y, -forward.X)
+        let fov = toRadians rayCaster.options.fov
+        let halfFov = fov / 2.0f
+        let halfHeight = 10f
+        let halfWidth = 10f
+        for i in 0 .. rayCaster.rays.Length - 1 do
+            let offset = (2f * float32 i) / (float32 rayCaster.rays.Length - 1f) - 1f
+            let rayStart = origin
+            let rayEnd = forward + right * halfWidth * offset
+            ()
+        let angleInDegrees = MathF.Atan2(forward.Y, forward.X) |> toDegrees
+        update rayCaster map origin angleInDegrees

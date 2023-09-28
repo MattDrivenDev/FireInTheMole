@@ -55,13 +55,14 @@ namespace Stantz
                 correctFishEye: false);;
 
             var angleInDegrees = 0f;
+            var forward = new Vector2((float)Math.Cos(angleInDegrees), (float)Math.Sin(angleInDegrees));
             var rayCaster = RayCasting.create(
                 options,
                 _map,
                 mapCenter,
                 angleInDegrees);
             var playerSize = new Vector2(20f, 20f);
-            _player = new Player(rayCaster, mapCenter, playerSize, angleInDegrees);
+            _player = new Player(rayCaster, mapCenter, playerSize, forward);
 
             base.LoadContent();
         }
@@ -86,7 +87,7 @@ namespace Stantz
         protected override void Draw(GameTime gameTime)
         {
             Window.Title = $"FPS: {(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString("0.00")}" +
-                $"Angle: {_player.AngleInDegrees}; " +
+                //$"Angle: {_player.AngleInDegrees}; " +
                 $"Zoom: {_camera.zoom}";
 
             GraphicsDevice.Clear(Color.LightBlue);

@@ -143,8 +143,8 @@ module Players =
             | KeyDown Keys.D -> Some Right
             | _ -> None
         let rotate =
-            if ks.IsKeyDown(Keys.Left) then -45f
-            elif ks.IsKeyDown(Keys.Right) then 45f
+            if ks.IsKeyDown(Keys.Left) then 45f
+            elif ks.IsKeyDown(Keys.Right) then -45f
             else 0f
         let act = ks.IsKeyDown(Keys.LeftControl)
         if player.index = PlayerIndex.One 
@@ -171,19 +171,19 @@ module Players =
                 match input.movement with
                 | Some Forward -> Vector2(c, s)
                 | Some Backward -> Vector2(-c, -s)
-                | Some Left -> Vector2(s, -c)
-                | Some Right -> Vector2(-s, c)
-                | Some ForwardLeft -> Vector2(c, s) + Vector2(s, -c)
-                | Some ForwardRight -> Vector2(c, s) + Vector2(-s, c)
-                | Some BackwardLeft -> Vector2(-c, -s) + Vector2(s, -c)
-                | Some BackwardRight -> Vector2(-c, -s) + Vector2(-s, c)
+                | Some Left -> Vector2(-s, c)
+                | Some Right -> Vector2(s, -c)
+                | Some ForwardLeft -> Vector2(c, s) + Vector2(-s, c)
+                | Some ForwardRight -> Vector2(c, s) + Vector2(s, -c)
+                | Some BackwardLeft -> Vector2(-c, -s) + Vector2(-s, c)
+                | Some BackwardRight -> Vector2(-c, -s) + Vector2(s, -c)
                 | None -> Vector2.Zero                
             let velocity = normVector2 positionDelta * player.speed * float32(deltatime)
             let boundsWithVelocity = Collisions.updateVelocity player.bounds velocity
             let collisions = Collisions.predictCollisions boundsWithVelocity mapBounds
             let resolvedBounds = Collisions.resolve boundsWithVelocity collisions
             let newBounds = Collisions.move resolvedBounds
-            let newRayCaster = RayCasting.update player.rayCaster map newBounds.center newAngle
+            let newRayCaster = RayCasting.update player.rayCaster map newBounds.center newDirection
             let newAnimationKey = animationKey newDirection
             let newAnimation = player.animations.[newAnimationKey]
             let animation = 
@@ -201,5 +201,7 @@ module Players =
         | Some input -> apply input
         | None -> 
             // No input means player is dead or inactive etc... not that there is no input from a player.
-            let newRayCaster = RayCasting.update player.rayCaster map player.bounds.center currentAngle
-            { player with rayCaster = newRayCaster }
+            { 
+                player with 
+                    rayCaster = RayCasting.update player.rayCaster map player.bounds.center player.direction 
+            }

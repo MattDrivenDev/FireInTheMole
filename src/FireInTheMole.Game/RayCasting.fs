@@ -69,7 +69,8 @@ module RayCasting =
     /// There is quite a lot of mutability in this function, but: 
     /// 1. It's a performance critical function
     /// 2. It's a translation of a C# version which was also performance critical
-    let update (rayCaster : RayCaster) (map : TileMap.TileMap) (origin : Vector2) angleInDegrees =
+    let update (rayCaster : RayCaster) (map : TileMap.TileMap) (origin : Vector2) (forward : Vector2) =
+        let angleInDegrees = MathF.Atan2(forward.Y, forward.X) |> toDegrees
         let avoidDivisionByZero = 0.0001f
         let originX = origin.X / float32 map.tileWidth
         let originY = origin.Y / float32 map.tileHeight
@@ -78,10 +79,13 @@ module RayCasting =
         let angleInRadians = toRadians angleInDegrees
         let fovInRadians = toRadians rayCaster.options.fov
         let halfFovInRadians = fovInRadians / 2.0f
-        let rayAngleDeltaInRadians = fovInRadians / float32 rayCaster.options.count
-        let mutable rayAngleInRadians = angleInRadians - halfFovInRadians + avoidDivisionByZero
+        let halfWidth = MathF.Tan(halfFovInRadians)
+        let right = Vector2(forward.Y, -forward.X)
         for i in 0 .. rayCaster.options.count - 1 do
             // Setup variables for the ray
+            let offset = (2f * float32 i) / (float32 rayCaster.options.count - 1f) - 1f
+            let rayEnd = forward + right * halfWidth * offset
+            let rayAngleInRadians = MathF.Atan2(rayEnd.Y, rayEnd.X)
             let sin = MathF.Sin(rayAngleInRadians)
             let cos = MathF.Cos(rayAngleInRadians)
             let mutable horizontalX = 0f
@@ -144,8 +148,8 @@ module RayCasting =
                 horizontalX <- horizontalX % 1f
                 textureOffset <- if sin > 0f then 1f - horizontalX else horizontalX
             // Fix the fish-eye effect
-            //if rayCaster.options.correctFishEye then 
-            //    depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
+            if rayCaster.options.correctFishEye then 
+                depth <- depth * MathF.Cos(angleInRadians - rayAngleInRadians)
             let ray = 
                 {
                     sin = sin
@@ -156,5 +160,4 @@ module RayCasting =
                     tileCoords = tile.key
                 }
             rayCaster.rays.[i] <- ray
-            rayAngleInRadians <- rayAngleInRadians + rayAngleDeltaInRadians
         { rayCaster with origin = origin; angleInDegrees = angleInDegrees; map = map }

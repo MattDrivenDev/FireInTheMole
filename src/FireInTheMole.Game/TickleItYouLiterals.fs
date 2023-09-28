@@ -27,7 +27,7 @@ module ThingsThatShouldProbablyBeConfigurable =
     let MAP_TILE_SIZE = 256
 
     [<Literal>]
-    let PLAYER_FOV = 75f
+    let PLAYER_FOV = 90f
     [<Literal>]
     let PLAYER_SPEED = 1f
     [<Literal>]
